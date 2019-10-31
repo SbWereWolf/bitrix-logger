@@ -1,27 +1,9 @@
 .htaccess
 /.idea/**
 /vendor/**
+/schemeimport/
 
 /upload/**
-
-# configs
-/bitrix/php_interface/dbconn.php
-/bitrix/.settings.php
-
-# backups
-/bitrix/backup
-!/bitrix/backup/index.php
-
-# logs
-/bitrix/*.log
-/bitrix/modules/updater.log
-/bitrix/modules/updater_partner.log
-
-# cache
-/bitrix/cache
-/bitrix/managed_cache
-/bitrix/stack_cache
-/bitrix/html_pages
-
-### exports
-/bitrix/catalog_export
+/bitrix/**
+/backup/**
+web.config
