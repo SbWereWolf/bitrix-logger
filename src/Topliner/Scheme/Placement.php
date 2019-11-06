@@ -40,6 +40,7 @@ class Placement
 
     public function getPoints(): array
     {
+        $connection = null;
         try {
             $connection = new PDO(
                 "{$this->type}:host={$this->host};dbname={$this->base}",
@@ -51,32 +52,25 @@ class Placement
         if ($connection === null) {
             echo 'не могу соединиться с базой' . PHP_EOL;
         }
-        $permit = null;
-        if ($connection !== null) {
-            $permit = $connection->prepare('
-select 
-       pt.id, pt.longitude,pt.latitude,
-       tp.tx_scheme_construction_uid uid,tp.distance,tp.allowance
-from 
-    tx_permit pt
-    left join tx_permit_scheme_construction tp 
-    on pt.id = tp.tx_permit_id
-ORDER BY uid, pt.id
-');
-            $isSuccess = $permit !== false;
-        }
-        $place = null;
+        $getPlace = null;
         if ($isSuccess) {
-            $place = $connection->prepare('
+            $getPlace = $connection->prepare("
 select 
-       tx.uid, tx.x,tx.y,tp.distance,tp.allowance
+    tx.uid, tx.x, tx.y, tx.type, tt.title, 
+    coalesce(pr.permit,'') permit,
+    coalesce(pr.issuing_at,0) issuing_at,
+    coalesce(pr.start,0) start,
+    coalesce(pr.finish,0) finish,
+    coalesce(pr.address,'') address
 from 
-     tx_scheme_construction tx
+    tx_scheme_construction tx
+    join tx_type tt on tx.type = tt.id 
     left join tx_permit_scheme_construction tp 
     on tx.uid = tp.tx_scheme_construction_uid
+    left join tx_permit pr on tp.tx_permit_id = pr.id
 ORDER BY tx.uid
-');
-            $isSuccess = $permit !== false;
+");
+            $isSuccess = $getPlace !== false;
         }
         if ($isSuccess) {
             $command = $connection->exec('SET NAMES \'utf8mb4\''
@@ -88,64 +82,40 @@ ORDER BY tx.uid
             $isSuccess = $command !== false;
         }
         if ($isSuccess) {
-            $isSuccess = $permit->execute();
-        }
-        $bulkPermit = [];
-        if ($isSuccess) {
-            $bulkPermit = $permit->fetchAll(PDO::FETCH_ASSOC);
-            $isSuccess = $place->execute();
+            $isSuccess = $getPlace->execute();
         }
         $bulkPlaces = [];
         if ($isSuccess) {
-            $bulkPlaces = $place->fetchAll(PDO::FETCH_ASSOC);
+            $bulkPlaces = $getPlace->fetchAll(PDO::FETCH_ASSOC);
         }
         if (!empty($connection)) {
             /** @noinspection PhpUnusedLocalVariableInspection */
             $command = $connection->exec('ROLLBACK');
             $connection = null;
         }
-        $may = !empty($bulkPermit) || !empty($bulkPlaces);
-        $location = ['permit' => [], 'place' => []];
-        if ($may) {
-            foreach ($bulkPermit as $item) {
-
-                $isPermit = isset($location['permit'][$item['id']]);
-                if (!$isPermit) {
-                    $location['permit'][$item['id']] =
-                        ['x' => $item['longitude'],
-                            'y' => $item['latitude']];
-                }
-                $isLocation = !empty($item['uid']);
-                if ($isLocation) {
-                    $distance = $item['distance'];
-                    $allowance = $item['allowance'];
-
-                    $location['permit'][$item['id']]
-                    ['place'][$item['uid']]['distance'] = $distance;
-                    $location['permit'][$item['id']]
-                    ['place'][$item['uid']]['allowance'] = $allowance;
-
-                    $location['place'][$item['uid']]
-                    ['permit'][$item['id']]['distance'] =
-                        $distance;
-                    $location['place'][$item['uid']]
-                    ['permit'][$item['id']]['allowance'] =
-                        $allowance;
-                }
+        $points = [];
+        foreach ($bulkPlaces as $item) {
+            $uid = (int)$item['uid'];
+            $isExists = key_exists($uid, $points);
+            if (!$isExists) {
+                $points[$uid]['x'] = $item['x'];
+                $points[$uid]['y'] = $item['y'];
+                $points[$uid]['type'] = $item['type'];
+                $points[$uid]['title'] = $item['title'];
             }
-            $bulkPermit = null;
-            foreach ($bulkPlaces as $item) {
-                $isPlace = isset($location['place'][$item['uid']])
-                    && isset($location['place'][$item['uid']]['x']);
-                if (!$isPlace) {
-                    $location['place'][$item['uid']]['x'] = $item['x'];
-                    $location['place'][$item['uid']]['y'] = $item['y'];
-                }
+            $isExists = !empty($item['permit']);
+            if ($isExists) {
+                $permit = (int)$item['permit'];
+                $points[$uid]['permit'][$permit] = [
+                    'issuingAt' => (int)$item['issuing_at'],
+                    'start' => (int)$item['start'],
+                    'finish' => (int)$item['finish'],
+                    'address' => $item['address'],
+                ];
             }
-            $bulkPlaces = null;
         }
 
-        return $location;
+        return $points;
     }
 
 }
