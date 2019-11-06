@@ -3,7 +3,15 @@
 /vendor/**
 /schemeimport/
 
-/upload/**
-/bitrix/**
 /backup/**
+/bitrix/**
+!/bitrix/.settings.php.example
+!/bitrix/php_interface/dbconn.php.example
+!/bitrix/php_interface/after_connect.php.example
+!/bitrix/php_interface/after_connect_d7.php.example
+!/bitrix/templates/corp_services_orange/
+!/bitrix/templates/furniture_blue/
+!/bitrix/templates/scheme-view
+/upload/**
 web.config
+/scheme/points.js

@@ -25,4 +25,5 @@ define("BX_FILE_PERMISSIONS", 0664);
 define("BX_DIR_PERMISSIONS", 0775);
 @umask(~(BX_FILE_PERMISSIONS|BX_DIR_PERMISSIONS)&0777);
 define("BX_DISABLE_INDEX_PAGE", true);
-?>
+
+date_default_timezone_set("Etc/GMT-5");

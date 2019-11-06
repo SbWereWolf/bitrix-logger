@@ -1,0 +1,27 @@
+div .black {
+    border: 1px solid black; /* Параметры границы */
+    background: black;
+}
+
+div .green {
+    border: 1px solid green; /* Параметры границы */
+    background: green;
+}
+
+div .blue {
+    border: 1px solid blue; /* Параметры границы */
+    background: blue;
+}
+
+div .brown {
+    border: 1px solid brown; /* Параметры границы */
+    background: brown;
+}
+
+.padding5 {
+    padding: 5px;
+}
+
+.height100 {
+    height: 97%;
+}
