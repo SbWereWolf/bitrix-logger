@@ -82,7 +82,7 @@ jQuery(function ($) {
             let footer = place.title;
             if (!hasPermit) {
                 header = `${header} *`;
-                body = 'Место для вашей рекламы';
+                body = '';
             }
 
             if (hasPermit) {
@@ -97,7 +97,8 @@ jQuery(function ($) {
                     const issuingAt = getDateString(permit.issuingAt);
                     const start = getDateString(permit.start);
                     const finish = getDateString(permit.finish);
-                    body = body + `<li> Разрешние #${index} от ${issuingAt}`
+                    body = body
+                        + `<li> Разрешние #${index} от ${issuingAt}`
                         + ` период действия с ${start} по ${finish}`
                         + ` место размещения: ${permit.address};</li>`
                 });
@@ -114,7 +115,7 @@ jQuery(function ($) {
                 {
                     iconLayout: 'default#image',
                     iconImageClipRect: icons[place.type],
-                    iconImageHref: '/scheme/icon-legend.jpg',
+                    iconImageHref: '/scheme/assets/icon-legend.jpg',
                     iconImageSize: [40, 40],
                     iconImageOffset: [-20, -20]
                 }
