@@ -98,9 +98,9 @@ ORDER BY tx.uid
             $uid = (int)$item['uid'];
             $isExists = key_exists($uid, $points);
             if (!$isExists) {
-                $points[$uid]['x'] = $item['x'];
-                $points[$uid]['y'] = $item['y'];
-                $points[$uid]['type'] = $item['type'];
+                $points[$uid]['x'] = (float)$item['x'];
+                $points[$uid]['y'] = (float)$item['y'];
+                $points[$uid]['type'] = (int)$item['type'];
                 $points[$uid]['title'] = $item['title'];
             }
             $isExists = !empty($item['permit']);
