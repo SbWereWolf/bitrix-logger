@@ -4,7 +4,6 @@
 namespace Topliner\Scheme;
 
 
-use Bitrix\Highloadblock\HighloadBlockTable;
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\ObjectPropertyException;
 use Bitrix\Main\ORM\Data\DataManager;
@@ -53,7 +52,6 @@ class Construction
 
     public function extractPoints(): array
     {
-
         CModule::IncludeModule(self::IBLOCK);
 
         $filter = [self::SECTION_ID => $this->constructions
@@ -64,7 +62,8 @@ class Construction
 
         $permits = [];
         $result = [];
-        $constructions = $this->referenceFor('ConstructionTypes');
+        $constructions = (new Reference('ConstructionTypes'))
+            ->get();
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
@@ -124,7 +123,8 @@ class Construction
 
         CModule::IncludeModule('highloadblock');
 
-        $distributors = $this->referenceFor('DistributorsOfAds');
+        $distributors = (new Reference('DistributorsOfAds'))
+            ->get();
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
@@ -208,24 +208,6 @@ class Construction
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $reference
-     *
-     * @return DataManager|null
-     */
-    public function referenceFor(string $reference)
-    {
-        $distributors = null;
-        try {
-            $entity = HighloadBlockTable
-                ::compileEntity($reference);
-            $distributors = $entity->getDataClass();
-        } catch (SystemException $e) {
-            echo $e->getMessage();
-        }
-        return $distributors;
     }
 
     /**
