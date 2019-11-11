@@ -4,8 +4,49 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "d768c342fc329353ad44596ffc119b77",
-  "packages": [],
+  "content-hash": "0db0d4b7949c5c0390d87e8efa1ccee8",
+  "packages": [
+    {
+      "name": "sbwerewolf/language-specific",
+      "version": "7.0.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/SbWereWolf/language-specific.git",
+        "reference": "3cdd5f582e63278aa1be90c5b05226ea1e3591c0"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/SbWereWolf/language-specific/zipball/3cdd5f582e63278aa1be90c5b05226ea1e3591c0",
+        "reference": "3cdd5f582e63278aa1be90c5b05226ea1e3591c0",
+        "shasum": ""
+      },
+      "require": {
+        "php": "~7.0"
+      },
+      "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "phpunit/phpunit": "^6"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Nikolay Volkhin",
+          "email": "ulfnew@gmail.com"
+        }
+      ],
+      "description": "Library for using PHP specific features",
+      "time": "2019-11-09T21:34:10+00:00"
+    }
+  ],
   "packages-dev": [],
   "aliases": [],
   "minimum-stability": "stable",
@@ -13,7 +54,8 @@
   "prefer-stable": false,
   "prefer-lowest": false,
   "platform": {
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-json": "*"
   },
   "platform-dev": []
 }

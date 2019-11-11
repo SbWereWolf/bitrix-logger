@@ -6,6 +6,7 @@
   },
   "require": {
     "ext-pdo": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "sbwerewolf/language-specific": "^7.0"
   }
 }

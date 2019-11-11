@@ -28,7 +28,7 @@ function adjustCluster(conditions = {types: [], address: ""}) {
     $.each(points, function (index, place) {
 
         const allow = !doSelecting
-            || conditions.types.includes(place.type);
+            || conditions.types.includes(place.construction);
 
         const hasPermit = typeof place.permit !== typeof undefined;
 
@@ -36,42 +36,43 @@ function adjustCluster(conditions = {types: [], address: ""}) {
         let body = "";
         let footer = "";
         if (allow) {
-            header = `РК №${index} (${place.type})`;
+            header = `РК №${index} (${place.construction})`;
             body =
-                `GPS координаты: долгота <b>${place['x']}</b><br>`
-                + `GPS координаты: широта <b>${place['y']}</b>`;
+                `GPS координаты: долгота <b>${place.x}</b><br>`
+                + `GPS координаты: широта <b>${place.y}</b>`;
             body = `<p>${body}</p>`;
-            footer = place.title;
+            footer = place.name;
         }
         if (allow && !hasPermit) {
             header = `${header} #`;
         }
         if (allow && hasPermit) {
             header = `${header} +`;
-            body = `${body}<p><ul>`;
 
             function getDateString(unixTime) {
                 return (new Date(unixTime * 1000))
                     .toLocaleDateString("ru-RU");
             }
 
-            $.each(place.permit, function (index, permit) {
-                const issuingAt = getDateString(permit.issuingAt);
-                const start = getDateString(permit.start);
-                const finish = getDateString(permit.finish);
-                body = body
-                    + `<li>`
-                    + `Разрешение <b>№${index} от ${issuingAt}</b><br>`
-                    + `Период действия с <b>${start}</b>`
-                    + ` по <b>${finish}</b><br>`
-                    + `Место размещения: <b>${permit.address}</b><br>`
-                    + `</li>`
-            });
+            body = `${body}<p><ul>`;
+
+            const issuingAt = getDateString(place.permit.issuing_at);
+            const start = getDateString(place.permit.start);
+            const finish = getDateString(place.permit.finish);
+            body = body
+                + `<li>`
+                + `Разрешение <b>№${place.permit.number}</b>`
+                + ` от <b>${issuingAt}</b><br>`
+                + `Период действия с <b>${start}</b>`
+                + ` по <b>${finish}</b><br>`
+                + `Место размещения: <b>${place.permit.remark}</b><br>`
+                + `</li>`;
+
             body = `${body}</ul></p>`;
         }
         if (allow) {
             const point = new ymaps.Placemark(
-                [place['y'], place['x']],
+                [place.y, place.x],
                 {
                     iconCaption: index,
                     balloonContentHeader: header,
@@ -80,7 +81,7 @@ function adjustCluster(conditions = {types: [], address: ""}) {
                 },
                 {
                     iconLayout: 'default#image',
-                    iconImageClipRect: icons[place.type],
+                    iconImageClipRect: icons[place.construction],
                     iconImageHref: '/scheme/assets/icon-legend.jpg',
                     iconImageSize: [40, 40],
                     iconImageOffset: [-20, -20]
