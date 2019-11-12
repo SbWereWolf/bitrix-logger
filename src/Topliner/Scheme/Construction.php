@@ -73,7 +73,7 @@ class Construction
 
             $properties = $this->getConstruction($source, $constructions);
             if (!empty($properties)) {
-                $data['construction'] = $properties['id'];
+                $data['construct'] = $properties['id'];
                 $data['name'] = $properties['name'];
             }
             $data['location'] = $source
@@ -168,7 +168,7 @@ class Construction
 
             $properties = $this->getConstruction($source, $constructions);
             if (!empty($properties)) {
-                $data['construction'] = $properties['id'];
+                $data['construct'] = $properties['id'];
                 $data['name'] = $properties['name'];
             }
 

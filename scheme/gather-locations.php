@@ -4,10 +4,13 @@ use Bitrix\Main\Config\Configuration;
 use Topliner\Scheme\Construction;
 
 const OBTAIN = 'obtain';
-$_SERVER["DOCUMENT_ROOT"] = realpath(__DIR__) . '/..';
+$_SERVER['DOCUMENT_ROOT'] = realpath(__DIR__) . '/..';
 
-require_once($_SERVER["DOCUMENT_ROOT"] . '/vendor/autoload.php');
-require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/header.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php');
+require_once($_SERVER['DOCUMENT_ROOT']
+    . '/bitrix/modules/main/include/prolog_before.php');
+define('NO_KEEP_STATISTIC', true);
+define('NO_AGENT_STATISTIC', true);
 
 /* @var $APPLICATION CMain */
 global $APPLICATION;

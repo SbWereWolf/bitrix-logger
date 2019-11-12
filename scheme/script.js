@@ -20,7 +20,7 @@ const types = {
 };
 /* myMap = new ymaps.Map("map", {}); */
 let myMap = null;
-const lease = [];
+const inLease = [];
 const available = [];
 
 function adjustCluster(conditions = {types: [], address: ""}) {
@@ -29,7 +29,7 @@ function adjustCluster(conditions = {types: [], address: ""}) {
     $.each(points, function (index, place) {
 
         const allow = !doSelecting
-            || conditions.types.includes(place.construction);
+            || conditions.types.includes(place.construct);
 
         const hasPermit = typeof place.permit !== typeof undefined;
 
@@ -37,11 +37,7 @@ function adjustCluster(conditions = {types: [], address: ""}) {
         let body = "";
         let footer = "";
         if (allow) {
-            header = `РК №${index} (${place.construction})`;
-            body =
-                `GPS координаты: долгота <b>${place.x}</b><br>`
-                + `GPS координаты: широта <b>${place.y}</b>`;
-            body = `<p>${body}</p>`;
+            header = `РК №${index} (${place.construct})`;
             footer = place.name;
         }
         let iconSet = [];
@@ -49,28 +45,16 @@ function adjustCluster(conditions = {types: [], address: ""}) {
             iconSet = available;
         }
         if (allow && hasPermit) {
-            iconSet = lease;
+            iconSet = inLease;
 
-            function getDateString(unixTime) {
-                return (new Date(unixTime * 1000))
-                    .toLocaleDateString("ru-RU");
-            }
-
-            body = `${body}<p><ul>`;
-
-            const issuingAt = getDateString(place.permit.issuing_at);
-            const start = getDateString(place.permit.start);
-            const finish = getDateString(place.permit.finish);
             body = body
-                + `<li>`
-                + `Разрешение <b>№${place.permit.number}</b>`
-                + ` от <b>${issuingAt}</b><br>`
-                + `Период действия с <b>${start}</b>`
-                + ` по <b>${finish}</b><br>`
-                + `Место размещения: <b>${place.permit.remark}</b><br>`
-                + `</li>`;
-
-            body = `${body}</ul></p>`;
+                + `<p><ul><li>`
+                + `Адрес: <b>${place.location}</b>`
+                + `</li></ul></p>`
+                + `<button class="btn btn-block btn-success">
+Смотреть панораму</button>`
+                + `<button class="btn btn-block btn-primary">
+Редактировать</button>`;
         }
         if (allow) {
             const point = new ymaps.Placemark(
@@ -83,7 +67,7 @@ function adjustCluster(conditions = {types: [], address: ""}) {
                 },
                 {
                     iconLayout: 'default#image',
-                    iconImageClipRect: iconSet[place.construction],
+                    iconImageClipRect: iconSet[place.construct],
                     iconImageHref: '/scheme/assets/icons.webp',
                     iconImageSize: [50, 50],
                     iconImageOffset: [-20, -20]
@@ -168,7 +152,7 @@ jQuery(function ($) {
             return icons;
         }
 
-        defineIconsSet(lease, 0, 0);
+        defineIconsSet(inLease, 0, 0);
         defineIconsSet(available, dx * 3, 0);
     }
 
