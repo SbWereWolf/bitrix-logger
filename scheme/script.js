@@ -20,7 +20,8 @@ const types = {
 };
 /* myMap = new ymaps.Map("map", {}); */
 let myMap = null;
-const icons = [];
+const lease = [];
+const available = [];
 
 function adjustCluster(conditions = {types: [], address: ""}) {
     const doSelecting = conditions.types.length !== 0;
@@ -43,11 +44,12 @@ function adjustCluster(conditions = {types: [], address: ""}) {
             body = `<p>${body}</p>`;
             footer = place.name;
         }
+        let iconSet = [];
         if (allow && !hasPermit) {
-            header = `${header} #`;
+            iconSet = available;
         }
         if (allow && hasPermit) {
-            header = `${header} +`;
+            iconSet = lease;
 
             function getDateString(unixTime) {
                 return (new Date(unixTime * 1000))
@@ -81,9 +83,9 @@ function adjustCluster(conditions = {types: [], address: ""}) {
                 },
                 {
                     iconLayout: 'default#image',
-                    iconImageClipRect: icons[place.construction],
-                    iconImageHref: '/scheme/assets/icon-legend.jpg',
-                    iconImageSize: [40, 40],
+                    iconImageClipRect: iconSet[place.construction],
+                    iconImageHref: '/scheme/assets/icons.webp',
+                    iconImageSize: [50, 50],
                     iconImageOffset: [-20, -20]
                 }
             );
@@ -96,72 +98,81 @@ function adjustCluster(conditions = {types: [], address: ""}) {
 }
 
 jQuery(function ($) {
-
     function composeIcons() {
-        const dy = 137;
-        const dx = 140;
-        let sx = 0;
-        let sy = 0;
-        icons[types["white-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //1
-        sx += dx;
-        icons[types["white-cube"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //2
-        sx += dx;
-        icons[types["V"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //3
-        sx += dx;
-        icons[types["twice-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //4
-        sx += dx;
-        icons[types["black-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //5
-        sy += dy;
-        sx = 0;
-        icons[types["crocodile"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //6
-        sx += dx;
-        icons[types["flag"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //7
-        sx += dx;
-        icons[types["six-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //8
-        sx += dx;
-        icons[types["black-cube"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //9
-        sx += dx;
-        icons[types["white-triangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //10
-        sy += dy;
-        sx = 0;
-        icons[types["cross"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //11
-        sx += dx;
-        icons[types["star"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //12
-        sx += dx;
-        icons[types["arrow"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //13
-        sx += dx;
-        icons[types["black-triangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //14
-        sy += dy;
-        sx = 0;
-        icons[types["white-long-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //15
-        sx += dx;
-        icons[types["black-circle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //16
-        sx += dx;
-        icons[types["white-circle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //17
-        sx += dx;
-        icons[types["white-circle-with-dot"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //18
+        const dy = 138;
+        const dx = 138;
+
+        function defineIconsSet(icons, sx, sy) {
+            const initialX = sx;
+            icons[types["white-rectangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //1
+            sx += dx;
+            icons[types["white-cube"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //2
+            sx += dx;
+            icons[types["V"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //3
+            sy += dy;
+            sx = initialX;
+            icons[types["twice-rectangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //4
+            sx += dx;
+            icons[types["black-rectangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //5
+            sx += dx;
+            icons[types["crocodile"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //6
+            sy += dy;
+            sx = initialX;
+            icons[types["flag"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //7
+            sx += dx;
+            icons[types["six-rectangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //8
+            sx += dx;
+            icons[types["black-cube"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //9
+            sy += dy;
+            sx = initialX;
+            icons[types["white-triangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //10
+            sx += dx;
+            icons[types["cross"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //11
+            sx += dx;
+            icons[types["star"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //12
+            sy += dy;
+            sx = initialX;
+            icons[types["arrow"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //13
+            sx += dx;
+            icons[types["black-triangle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //14
+            sx += dx;
+            icons[types["white-long-rectangle"]] =
+                [[Number(sx), Number(sy)],
+                    [Number(sx + dx), Number(sy + dy)]]; //15
+            sy += dy;
+            sx = initialX;
+            icons[types["black-circle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //16
+            sx += dx;
+            icons[types["white-circle"]] = [[Number(sx), Number(sy)],
+                [Number(sx + dx), Number(sy + dy)]]; //17
+            sx += dx;
+            icons[types["white-circle-with-dot"]] =
+                [[Number(sx), Number(sy)],
+                    [Number(sx + dx), Number(sy + dy)]]; //18
+
+            return icons;
+        }
+
+        defineIconsSet(lease, 0, 0);
+        defineIconsSet(available, dx * 3, 0);
     }
 
     composeIcons();
-
 
     const x = 61.26;
     const y = 55.03;
