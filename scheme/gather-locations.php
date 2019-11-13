@@ -1,7 +1,7 @@
 <?php
 
 use Bitrix\Main\Config\Configuration;
-use Topliner\Scheme\Construction;
+use Topliner\Scheme\Construct;
 
 const OBTAIN = 'obtain';
 $_SERVER['DOCUMENT_ROOT'] = realpath(__DIR__) . '/..';
@@ -29,8 +29,8 @@ if (!$isObtain && $isExists) {
 $isSuccess = false;
 $file = null;
 if ($isObtain) {
-    $placement = new Construction();
-    $points = $placement->extractPoints();
+    $construct = new Construct();
+    $points = $construct->get();
     $json = json_encode($points);
     $json = "var points = $json;";
     $file = fopen(realpath(__DIR__) . '/points.js', 'w');

@@ -23,6 +23,44 @@ let myMap = null;
 const inLease = [];
 const available = [];
 
+const constructEdit = "/bitrix/admin/iblock_element_edit.php?"
+    + "IBLOCK_ID=8&type=permit_list&lang=ru&find_section_section=6"
+    + "&WF=Y&ID=";
+
+const captions = {
+    place_title: "Наименование рекламной конструкции",
+    place_construct: "Вид рекламной конструкции",
+    place_location: "Место расположения",
+    place_remark: "Описательный адрес",
+    place_x: "Географические координаты, долгота",
+    place_y: "Географические координаты, широта",
+    place_number_of_sides: "Количество сторон рекламной конструкции",
+    place_construct_area: "Площадь рекламной конструкции",
+    place_field_type: "Тип информационного поля",
+    place_fields_number: "Количество полей рекламной конструкции",
+    place_construct_height: "Размер информационного пола (высота)",
+    place_construct_width: "Размер информационного поля (ширина)",
+    place_fields_area: "Общая площадь информационных полей",
+    place_lightening: "Наличие подсвета",
+    place_permit_number: "Номер разрешения",
+    place_permit_issuing_at: "Дата выдачи разрешения",
+    place_permit_start: "Начало действия разрешения",
+    place_permit_finish: "Окончание действия разрешения",
+    place_permit_distributor: "Рекламораспространитель",
+    place_permit_contract: "Реквизиты договора",
+    place_number: "Порядковый номер в Схеме",
+};
+
+function composePanorama(x, y) {
+    return `http://yandex.ru/maps/?from=api-maps`
+        + `&ll=${x}%2C${y}&panorama%5Bpoint%5D=${x}%2C${y}`;
+}
+
+function getDateString(unixTime) {
+    return (new Date(unixTime * 1000))
+        .toLocaleDateString("ru-RU");
+}
+
 function adjustCluster(conditions = {types: [], address: ""}) {
     const doSelecting = conditions.types.length !== 0;
     const cluster = new ymaps.Clusterer();
@@ -35,9 +73,22 @@ function adjustCluster(conditions = {types: [], address: ""}) {
 
         let header = "";
         let body = "";
+        const panorama = composePanorama(place.x, place.y);
+
         let footer = "";
         if (allow) {
             header = `РК №${index} (${place.construct})`;
+            body = `<p><ul><li>`
+                + `Адрес: <b>${place.location}</b>`
+                + `</li></ul></p>`
+                + `<a class="btn btn-block btn-success"`
+                + ` target="_blank"`
+                + ` href="${panorama}">`
+                + `Открыть панораму</a>`
+                + `<a class="btn btn-block btn-primary"`
+                + ` target="_blank"`
+                + ` href="${constructEdit}${index}">`
+                + `Редактировать</a>`;
             footer = place.name;
         }
         let iconSet = [];
@@ -46,24 +97,51 @@ function adjustCluster(conditions = {types: [], address: ""}) {
         }
         if (allow && hasPermit) {
             iconSet = inLease;
-
-            body = body
-                + `<p><ul><li>`
-                + `Адрес: <b>${place.location}</b>`
-                + `</li></ul></p>`
-                + `<button class="btn btn-block btn-success">
-Смотреть панораму</button>`
-                + `<button class="btn btn-block btn-primary">
-Редактировать</button>`;
         }
+        let permitInfo = {};
+        if (allow && typeof place.permit !== typeof undefined) {
+
+            const issuing_at = getDateString(place.permit.issuing_at);
+            const start = getDateString(place.permit.start);
+            const finish = getDateString(place.permit.finish);
+
+            permitInfo = {
+                place_permit_number: place.permit.number,
+                place_permit_issuing_at: issuing_at,
+                place_permit_start: start,
+                place_permit_finish: finish,
+                place_permit_distributor: place.permit.distributor,
+                place_permit_contract: place.permit.contract,
+            };
+        }
+        let placeInfo = {};
         if (allow) {
+            placeInfo = {
+                place_title: place.title,
+                place_construct: place.name,
+                place_location: place.location,
+                place_remark: place.remark,
+                place_x: place.x,
+                place_y: place.y,
+                place_number_of_sides: place.number_of_sides,
+                place_construct_area: place.construct_area,
+                place_field_type: place.field_type,
+                place_fields_number: place.fields_number,
+                place_construct_height: place.construct_height,
+                place_construct_width: place.construct_width,
+                place_fields_area: place.fields_area,
+                place_lightening: place.lightening,
+                place_number: index,
+            };
+            const details = Object.assign(placeInfo, permitInfo);
             const point = new ymaps.Placemark(
                 [place.y, place.x],
                 {
                     iconCaption: index,
                     balloonContentHeader: header,
                     balloonContentBody: body,
-                    balloonContentFooter: footer
+                    balloonContentFooter: footer,
+                    info: details
                 },
                 {
                     iconLayout: 'default#image',
@@ -73,6 +151,68 @@ function adjustCluster(conditions = {types: [], address: ""}) {
                     iconImageOffset: [-20, -20]
                 }
             );
+            point.events.add('click', function (e) {
+
+                const info = e.originalEvent.target.properties._data
+                    .info;
+                let content =
+                    `<dl>`
+                    + `<dt>${captions.place_number}</dt>`
+                    + `<dd>${info.place_number}</dd>`
+                    + `<dt>${captions.place_title}</dt>`
+                    + `<dd>${info.place_title}</dd>`
+                    + `<dt>${captions.place_construct}</dt>`
+                    + `<dd>${info.place_construct}</dd>`
+                    + `<dt>${captions.place_location}</dt>`
+                    + `<dd>${info.place_location}</dd>`
+                    + `<dt>${captions.place_remark}</dt>`
+                    + `<dd>${info.place_remark}</dd>`
+                    + `<dt>${captions.place_x}</dt>`
+                    + `<dd>${info.place_x}</dd>`
+                    + `<dt>${captions.place_y}</dt>`
+                    + `<dd>${info.place_y}</dd>`
+                    + `<dt>${captions.place_number_of_sides}</dt>`
+                    + `<dd>${info.place_number_of_sides}</dd>`
+                    + `<dt>${captions.place_construct_area}</dt>`
+                    + `<dd>${info.place_construct_area}</dd>`
+                    + `<dt>${captions.place_field_type}</dt>`
+                    + `<dd>${info.place_field_type}</dd>`
+                    + `<dt>${captions.place_fields_number}</dt>`
+                    + `<dd>${info.place_fields_number}</dd>`
+                    + `<dt>${captions.place_construct_height}</dt>`
+                    + `<dd>${info.place_construct_height}</dd>`
+                    + `<dt>${captions.place_construct_width}</dt>`
+                    + `<dd>${info.place_construct_width}</dd>`
+                    + `<dt>${captions.place_fields_area}</dt>`
+                    + `<dd>${info.place_fields_area}</dd>`
+                    + `<dt>${captions.place_lightening}</dt>`
+                    + `<dd>${info.place_lightening}</dd>`
+                ;
+
+                if (typeof info.place_permit_number
+                    !== typeof undefined
+                ) {
+                    content = content
+                        + `<dt>${captions.place_permit_number}</dt>`
+                        + `<dd>${info.place_permit_number}</dd>`
+                        + `<dt>${captions.place_permit_issuing_at}</dt>`
+                        + `<dd>${info.place_permit_issuing_at}</dd>`
+                        + `<dt>${captions.place_permit_start}</dt>`
+                        + `<dd>${info.place_permit_start}</dd>`
+                        + `<dt>${captions.place_permit_finish}</dt>`
+                        + `<dd>${info.place_permit_finish}</dd>`
+                        + `<dt>${captions.place_permit_distributor}</dt>`
+                        + `<dd>${info.place_permit_distributor}</dd>`
+                        + `<dt>${captions.place_permit_contract}</dt>`
+                        + `<dd>${info.place_permit_contract}</dd>`
+                    ;
+                }
+                content = `${content}</dl>`;
+
+                $("#detail").html(content);
+                $("#tab-for-details").click();
+
+            });
 
             cluster.add(point);
         }

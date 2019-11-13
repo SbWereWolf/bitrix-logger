@@ -202,10 +202,15 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
                     </section>
                 </div>
                 <div class="tab">
-                    <input type="radio" id="tab3" name="tab-group">
-                    <label for="tab3" class="tab-title">Подробно
+                    <input type="radio" id="tab-for-details"
+                           name="tab-group">
+                    <label for="tab-for-details" class="tab-title">
+                        Подробно
                     </label>
-                    <section class="tab-content">Три</section>
+                    <section class="tab-content">
+                        <div id="detail">
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>

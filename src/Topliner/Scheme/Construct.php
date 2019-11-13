@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Topliner\Scheme;
 
 
@@ -15,7 +14,7 @@ use Exception;
 use LanguageSpecific\ArrayHandler;
 use Topliner\Routines\Utility;
 
-class Construction
+class Construct
 {
 
     const IBLOCK = 'iblock';
@@ -28,7 +27,7 @@ class Construction
     /**
      * @var BitrixSection
      */
-    private $constructions = null;
+    private $constructs = null;
 
 
     public function __construct($permits = null, $constructions = null)
@@ -42,57 +41,78 @@ class Construction
         }
         $isConstruction = $constructions instanceof BitrixSection;
         if ($isConstruction) {
-            $this->constructions = $constructions;
+            $this->constructs = $constructions;
         }
         if (!$isConstruction) {
-            $this->constructions = new BitrixSection(8, 6);
+            $this->constructs = new BitrixSection(8, 6);
         }
     }
 
-
-    public function extractPoints(): array
+    public function get(): array
     {
         CModule::IncludeModule(self::IBLOCK);
 
-        $filter = [self::SECTION_ID => $this->constructions
+        $filter = [self::SECTION_ID => $this->constructs
             ->getSection()];
         $values = [];
         CIBlockElement::GetPropertyValuesArray($values,
-            $this->constructions->getBlock(), $filter);
+            $this->constructs->getBlock(), $filter);
 
         $permits = [];
         $result = [];
         $constructions = (new Reference('ConstructionTypes'))
+            ->get();
+        $ofSurfaces = (new Reference('ConstructionFieldType'))
+            ->get();
+        $ofLightenings = (new Reference('Lightening'))
             ->get();
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
 
             $data['title'] = $source
-                ->pull('construction_title')->get(self::VALUE)->str();
+                ->pull('title')->get(self::VALUE)->str();
 
-            $properties = $this->getConstruction($source, $constructions);
+            $properties = self::getConstruction($source, $constructions);
             if (!empty($properties)) {
                 $data['construct'] = $properties['id'];
                 $data['name'] = $properties['name'];
             }
             $data['location'] = $source
-                ->pull('location_address')->get(self::VALUE)->str();
+                ->pull('location')->get(self::VALUE)->str();
             $data['remark'] = $source
-                ->pull('address_remark')->get(self::VALUE)->str();
+                ->pull('remark')->get(self::VALUE)->str();
             $data['x'] = $source
                 ->pull('longitude')->get(self::VALUE)->double();
             $data['y'] = $source
                 ->pull('latitude')->get(self::VALUE)->double();
-            $data['size'] = $source
-                ->pull('information_field_size')->get(self::VALUE)
+            $data['construct_area'] = $source
+                ->pull('construct_area')->get(self::VALUE)->str();
+            $data['number_of_sides'] = $source
+                ->pull('number_of_sides')->get(self::VALUE)->str();
+
+            $surface = $source
+                ->pull('field_type')->get(self::VALUE)->str();
+            $data['field_type'] =
+                self::getTitleFor($surface, $ofSurfaces);
+
+            $data['construct_height'] = $source
+                ->pull('construct_height')->get(self::VALUE)
                 ->str();
-            $data['type'] = $source
-                ->pull('information_field_type')->get(self::VALUE)
-                ->str();
-            $data['area'] = $source
-                ->pull('construction_area_size')->get(self::VALUE)
-                ->str();
+            $data['construct_width'] = $source
+                ->pull('construct_width')->get(self::VALUE)->str();
+            $data['fields_number'] = $source
+                ->pull('fields_number')->get(self::VALUE)->str();
+            $data['fields_area'] = $source
+                ->pull('fields_area')->get(self::VALUE)->str();
+
+            $lightening = $source
+                ->pull('lightening')->get(self::VALUE)->str();
+
+            $data['lightening'] =
+                self::getTitleFor($lightening, $ofLightenings);
+
+
             $permit = $source->pull('permit_of_ad')
                 ->get(self::VALUE)->int();
 
@@ -123,79 +143,33 @@ class Construction
 
         CModule::IncludeModule('highloadblock');
 
-        $distributors = (new Reference('DistributorsOfAds'))
+        $ofDistributors = (new Reference('DistributorsOfAds'))
             ->get();
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
 
             $data['number'] = $source
-                ->pull('permit_number')->get(self::VALUE)->int();
+                ->pull('number')->get(self::VALUE)->int();
+            $data['contract'] = $source
+                ->pull('contract')->get(self::VALUE)->str();
 
-            $issuingAt = $source->pull('permit_issuing_at')
+            $issuingAt = $source->pull('issuing_at')
                 ->get(self::VALUE)->str();
-            $start = $source->pull('permit_start')
-                ->get(self::VALUE)->str();
-            $finish = $source->pull('permit_finish')
-                ->get(self::VALUE)->str();
-
             $data['issuing_at'] = Utility::toUnixTime($issuingAt);
+
+            $start = $source->pull('start')
+                ->get(self::VALUE)->str();
             $data['start'] = Utility::toUnixTime($start);
+
+            $finish = $source->pull('finish')
+                ->get(self::VALUE)->str();
             $data['finish'] = Utility::toUnixTime($finish);
 
             $distributor = $source
-                ->pull('ad_distributor')->get(self::VALUE)->str();
-            $name = null;
-            if (!$distributors !== null) {
-                /** @noinspection PhpUndefinedMethodInspection */
-                try {
-                    $name = $distributors::getList(array(
-                        'select' => array('UF_NAME'),
-                        'filter' => array('UF_XML_ID' => $distributor)
-                    ));
-                } catch (ObjectPropertyException $e) {
-                    echo $e->getMessage();
-                } catch (ArgumentException $e) {
-                    echo $e->getMessage();
-                } catch (SystemException $e) {
-                    echo $e->getMessage();
-                }
-            }
-            if ($name !== null) {
-                /* @var $name Result */
-                $data['distributor'] = $name->Fetch()['UF_NAME'];
-            }
-
-            $properties = $this->getConstruction($source, $constructions);
-            if (!empty($properties)) {
-                $data['construct'] = $properties['id'];
-                $data['name'] = $properties['name'];
-            }
-
-            $data['remark'] = $source
-                ->pull('address_remark')->get(self::VALUE)->str();
-            $data['serial'] = $source
-                ->pull('scheme_serial')->get(self::VALUE)->str();
-            $data['address'] = $source
-                ->pull('location_address')->get(self::VALUE)->str();
-            $data['sides'] = $source
-                ->pull('construction_side_number')
-                ->get(self::VALUE)->str();
-            $data['area'] = $source
-                ->pull('construction_area_size')->get(self::VALUE)
-                ->str();
-            $data['height'] = $source
-                ->pull('construction_height')->get(self::VALUE)
-                ->str();
-            $data['width'] = $source
-                ->pull('construction_width')->get(self::VALUE)
-                ->str();
-            $data['types'] = $source
-                ->pull('construction_fields_types')
-                ->get(self::VALUE)->str();
-            $data['numbers'] = $source
-                ->pull('construction_fields_number')
-                ->get(self::VALUE)->str();
+                ->pull('distributor')->get(self::VALUE)->str();
+            $title = self::getTitleFor($distributor, $ofDistributors);
+            $data['distributor'] = $title;
 
             $permitsInfo[$key] = $data;
         }
@@ -215,11 +189,11 @@ class Construction
      * @param DataManager $constructions
      * @return array
      */
-    public function getConstruction(ArrayHandler $source,
-                                    $constructions): array
+    public static function getConstruction(ArrayHandler $source,
+                                           $constructions): array
     {
         $construction = $source
-            ->pull('construction_type')->get(self::VALUE)->str();
+            ->pull('type')->get(self::VALUE)->str();
         $name = null;
         /* @var $constructions DataManager */
         if (!$constructions !== null) {
@@ -242,5 +216,37 @@ class Construction
         }
 
         return $value;
+    }
+
+    /**
+     * @param string $code
+     * @param DataManager $reference
+     * @return string
+     */
+    public static function getTitleFor(string $code,
+                                       $reference): string
+    {
+        /* @var $name Result */
+        $name = null;
+        if (!$reference !== null && !empty($code)) {
+            /** @noinspection PhpUndefinedMethodInspection */
+            try {
+                $name = $reference::getList(array(
+                    'select' => array('UF_NAME'),
+                    'filter' => array('UF_XML_ID' => $code)
+                ));
+            } catch (ObjectPropertyException $e) {
+                echo $e->getMessage();
+            } catch (ArgumentException $e) {
+                echo $e->getMessage();
+            } catch (SystemException $e) {
+                echo $e->getMessage();
+            }
+        }
+        $title = '';
+        if ($name !== null) {
+            $title = $name->Fetch()['UF_NAME'];
+        }
+        return $title;
     }
 }
