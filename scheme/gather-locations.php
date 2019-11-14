@@ -33,7 +33,7 @@ if ($isObtain) {
     $points = $construct->get();
     $json = json_encode($points);
     $json = "var points = $json;";
-    $file = fopen(realpath(__DIR__) . '/points.js', 'w');
+    $file = fopen(realpath(__DIR__) . '/js/points.js', 'w');
     $isSuccess = $file !== false;
 }
 if ($isSuccess) {
