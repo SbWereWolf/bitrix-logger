@@ -1,7 +1,9 @@
 const iconSetup = {
     dy: 138,
     dx: 138,
+    /* массив с координатами иконок "В аренде" */
     inLease: [],
+    /* массив с координатами иконок "Свободно" */
     available: [],
     compose: function () {
         this.define(this.inLease, 0, 0);

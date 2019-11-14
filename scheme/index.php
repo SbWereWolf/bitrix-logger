@@ -220,19 +220,37 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
                     </label>
                     <section class="tab-content">
                         <div>
-                            <button class="btn btn-block btn-info">
+                            <div class="form-group">
+                                <label for="construct-types">
+                                    Вид рекламной конструкции
+                                </label>
+                                <select class="form-control"
+                                        id="construct-types">
+                                </select>
+                            </div>
+                            <button id="add-new"
+                                    class="btn btn-block btn-info">
                                 Добавить
                             </button>
-                            <button class="btn btn-block btn-primary">
+                            <button id="move"
+                                    class="btn btn-block btn-primary">
                                 Переместить
                             </button>
-                            <button disabled
+                            <button id="accept" disabled
                                     class="btn btn-block btn-success">
                                 Сохранить
                             </button>
-                            <button disabled
+                            <button id="decline" disabled
                                     class="btn btn-block btn-danger">
                                 Отменить
+                            </button>
+                            <button id="enable"
+                                    class="btn btn-block btn-default">
+                                Включить кластеризацию
+                            </button>
+                            <button id="disable"
+                                    class="btn btn-block btn-default">
+                                Отключить кластеризацию
                             </button>
                         </div>
                     </section>

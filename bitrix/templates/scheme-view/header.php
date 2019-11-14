@@ -34,10 +34,15 @@
     </script>
     <script type="text/javascript" src="/scheme/js/landmark.js">
     </script>
+    <script type="text/javascript" src="/scheme/js/painter.js">
+    </script>
     <script type="text/javascript" src="/scheme/js/spreader.js">
     </script>
     <script type="text/javascript" src="/scheme/js/landmark-filter.js">
     </script>
+    <script type="text/javascript" src="/scheme/js/construct-options.js">
+    </script>
     <script type="text/javascript" src="/scheme/js/on-load.js"></script>
+
     <title>Схема рекламы</title>
 </head>

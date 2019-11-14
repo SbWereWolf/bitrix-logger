@@ -1,19 +1,18 @@
 /* myMap = new ymaps.Map("map", {}); */
 let myMap = null;
-/* массив с координатами иконок "В аренде" */
-const inLease = [];
-/* массив с координатами иконок "Свободно" */
-const available = [];
 /* Объект с метками:
 current выбранная для редактирования
 new - добавляемая */
-const placement = {current: {}, rollback: [], new: {}};
+const placement = {
+    current: {}, rollback: [],
+    newMark: {}, type: 0,
+};
 /* Ссылка для перехода к редактированию РК */
 const constructEdit = "/bitrix/admin/iblock_element_edit.php?"
     + "IBLOCK_ID=8&type=permit_list&lang=ru&find_section_section=6"
     + "&WF=Y&ID=";
 /* коды иконок для видов РК
-* "код иконки": идентификатор вида РК
+* "код иконки": идентификатор вида РК,
 * */
 const types = {
     "white-long-rectangle": 1,
@@ -34,6 +33,26 @@ const types = {
     "cross": 17,
     "V": 18,
     "arrow": 19,
+};
+const names = {
+    "white-long-rectangle": "щитовая установка арочного типа",
+    "six-rectangle": "транспарант-перетяжка на опорах",
+    "twice-rectangle": "щитовая установка с большой площадью",
+    "white-rectangle": "сити борд",
+    "black-rectangle": "щитовая установка",
+    "crocodile": "экран",
+    "white-cube": "сити формат",
+    "black-cube": "панель-кронштейн",
+    "white-circle": "афишная тумба",
+    "black-circle": "тумба",
+    "white-circle-with-dot": "стела",
+    "white-triangle": "афишный стенд",
+    "black-triangle": "стенд",
+    "flag": "флаги",
+    "star": "скамья",
+    "cross": "нестандартная рекламная конструкция",
+    "V": "световой короб",
+    "arrow": "указатель",
 };
 /* подписи для параметров РК */
 const captions = {

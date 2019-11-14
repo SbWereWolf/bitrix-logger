@@ -17,7 +17,7 @@ landmarkFilter = {
     },
     run: function () {
 
-        const conditions = this.define();
+        const conditions = landmarkFilter.define();
 
         myMap.geoObjects.removeAll();
         spreader.place(conditions);

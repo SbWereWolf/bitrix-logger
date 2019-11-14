@@ -20,5 +20,22 @@ jQuery(function ($) {
         spreader.place();
     }
     ymaps.ready(init);
+
     $("#search").on("click", landmarkFilter.run);
+    $("#add-new").on("click", landmark.startAddNew);
+    $("#move").on("click", landmark.startMoving);
+    $("#accept").on("click", landmark.acceptAction);
+    $("#decline").on("click", landmark.declineAction);
+
+    const options = selectWithTypes.get();
+    $("#construct-types").html(options);
+
+    $("#enable").on("click", function () {
+        spreader.letClusterize = true;
+        landmarkFilter.run();
+    });
+    $("#disable").on("click", function () {
+        spreader.letClusterize = false;
+        landmarkFilter.run();
+    });
 });
