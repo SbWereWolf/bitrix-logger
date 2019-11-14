@@ -1,3 +1,20 @@
+/* myMap = new ymaps.Map("map", {}); */
+let myMap = null;
+/* массив с координатами иконок "В аренде" */
+const inLease = [];
+/* массив с координатами иконок "Свободно" */
+const available = [];
+/* Объект с метками:
+current выбранная для редактирования
+new - добавляемая */
+const placement = {current: {}, rollback: [], new: {}};
+/* Ссылка для перехода к редактированию РК */
+const constructEdit = "/bitrix/admin/iblock_element_edit.php?"
+    + "IBLOCK_ID=8&type=permit_list&lang=ru&find_section_section=6"
+    + "&WF=Y&ID=";
+/* коды иконок для видов РК
+* "код иконки": идентификатор вида РК
+* */
 const types = {
     "white-long-rectangle": 1,
     "six-rectangle": 2,
@@ -18,15 +35,7 @@ const types = {
     "V": 18,
     "arrow": 19,
 };
-/* myMap = new ymaps.Map("map", {}); */
-let myMap = null;
-const inLease = [];
-const available = [];
-
-const constructEdit = "/bitrix/admin/iblock_element_edit.php?"
-    + "IBLOCK_ID=8&type=permit_list&lang=ru&find_section_section=6"
-    + "&WF=Y&ID=";
-
+/* подписи для параметров РК */
 const captions = {
     place_title: "Наименование рекламной конструкции",
     place_construct: "Вид рекламной конструкции",
@@ -38,7 +47,7 @@ const captions = {
     place_construct_area: "Площадь рекламной конструкции",
     place_field_type: "Тип информационного поля",
     place_fields_number: "Количество полей рекламной конструкции",
-    place_construct_height: "Размер информационного пола (высота)",
+    place_construct_height: "Размер информационного поля (высота)",
     place_construct_width: "Размер информационного поля (ширина)",
     place_fields_area: "Общая площадь информационных полей",
     place_lightening: "Наличие подсвета",

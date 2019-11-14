@@ -15,10 +15,10 @@ jQuery(function ($) {
             });
         }
 
-        composeIcons();
+        iconSetup.compose();
         setupMap();
-        adjustCluster();
+        spreader.place();
     }
     ymaps.ready(init);
-    $("#run").on("click", obtain);
+    $("#search").on("click", landmarkFilter.run);
 });

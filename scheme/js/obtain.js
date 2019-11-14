@@ -1,6 +1,5 @@
-function obtain() {
-
-    function defineFilter() {
+landmarkFilter = {
+    define: function () {
         const filter = {types: [], address: ""};
         const source = $("#search");
         const parameters = source.serializeArray();
@@ -15,28 +14,30 @@ function obtain() {
         });
 
         return filter;
-    }
+    },
+    run: function () {
 
-    const conditions = defineFilter();
+        const conditions = this.define();
 
-    myMap.geoObjects.removeAll();
-    adjustCluster(conditions);
+        myMap.geoObjects.removeAll();
+        spreader.place(conditions);
 
-    const address = conditions.address;
-    if (address !== "") {
-        ymaps.geocode(address, {
-            boundedBy: [[y, x], [yy, xx]],
-            strictBounds: true,
-            results: 1
-        }).then(function (res) {
-            const firstGeoObject = res.geoObjects.get(0),
-                coords = firstGeoObject.geometry.getCoordinates(),
-                bounds = firstGeoObject.properties.get('boundedBy');
+        const address = conditions.address;
+        if (address !== "") {
+            ymaps.geocode(address, {
+                boundedBy: [[y, x], [yy, xx]],
+                strictBounds: true,
+                results: 1
+            }).then(function (res) {
+                const firstGeoObject = res.geoObjects.get(0),
+                    coords = firstGeoObject.geometry.getCoordinates(),
+                    bounds = firstGeoObject.properties.get('boundedBy');
 
-            myMap.setCenter(coords);
-            myMap.setBounds(bounds, {
-                checkZoomRange: true
+                myMap.setCenter(coords);
+                myMap.setBounds(bounds, {
+                    checkZoomRange: true
+                });
             });
-        });
+        }
     }
-}
+};

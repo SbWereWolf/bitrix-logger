@@ -37,7 +37,7 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
                                        class="form-control" autofocus
                                        placeholder=
                                        "Наименование или адрес объекта">
-                                <button type="submit" id="run"
+                                <button type="submit" id="search"
                                         style="margin-top: 10px;"
                                         class="btn btn-primary">Найти
                                 </button>

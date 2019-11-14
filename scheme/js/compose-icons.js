@@ -1,74 +1,75 @@
-function composeIcons() {
-
-    function defineIconsSet(icons, sx, sy) {
+const iconSetup = {
+    dy: 138,
+    dx: 138,
+    inLease: [],
+    available: [],
+    compose: function () {
+        this.define(this.inLease, 0, 0);
+        this.define(this.available, this.dx * 3, 0);
+    },
+    define: function (icons, sx, sy) {
         const initialX = sx;
         icons[types["white-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //1
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //1
+        sx += this.dx;
         icons[types["white-cube"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //2
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //2
+        sx += this.dx;
         icons[types["V"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //3
-        sy += dy;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //3
+        sy += this.dy;
         sx = initialX;
         icons[types["twice-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //4
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //4
+        sx += this.dx;
         icons[types["black-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //5
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //5
+        sx += this.dx;
         icons[types["crocodile"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //6
-        sy += dy;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //6
+        sy += this.dy;
         sx = initialX;
         icons[types["flag"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //7
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //7
+        sx += this.dx;
         icons[types["six-rectangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //8
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //8
+        sx += this.dx;
         icons[types["black-cube"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //9
-        sy += dy;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //9
+        sy += this.dy;
         sx = initialX;
         icons[types["white-triangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //10
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //10
+        sx += this.dx;
         icons[types["cross"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //11
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //11
+        sx += this.dx;
         icons[types["star"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //12
-        sy += dy;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //12
+        sy += this.dy;
         sx = initialX;
         icons[types["arrow"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //13
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //13
+        sx += this.dx;
         icons[types["black-triangle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //14
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //14
+        sx += this.dx;
         icons[types["white-long-rectangle"]] =
             [[Number(sx), Number(sy)],
-                [Number(sx + dx), Number(sy + dy)]]; //15
-        sy += dy;
+                [Number(sx + this.dx), Number(sy + this.dy)]]; //15
+        sy += this.dy;
         sx = initialX;
         icons[types["black-circle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //16
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //16
+        sx += this.dx;
         icons[types["white-circle"]] = [[Number(sx), Number(sy)],
-            [Number(sx + dx), Number(sy + dy)]]; //17
-        sx += dx;
+            [Number(sx + this.dx), Number(sy + this.dy)]]; //17
+        sx += this.dx;
         icons[types["white-circle-with-dot"]] =
             [[Number(sx), Number(sy)],
-                [Number(sx + dx), Number(sy + dy)]]; //18
+                [Number(sx + this.dx), Number(sy + this.dy)]]; //18
 
         return icons;
     }
-
-    const dy = 138;
-    const dx = 138;
-
-    defineIconsSet(inLease, 0, 0);
-    defineIconsSet(available, dx * 3, 0);
-}
+};
