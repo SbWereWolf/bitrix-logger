@@ -28,6 +28,10 @@
             src="https://api-maps.yandex.ru/2.1/?apikey=344dde82-33ad-407f-b719-4e880eb28ff1&lang=ru_RU">
     </script>
 
+    <script type="text/javascript" src="/scheme/const.js"></script>
+    <script type="text/javascript" src="/scheme/adjust-cluster.js"></script>
+    <script type="text/javascript" src="/scheme/compose-icons.js"></script>
+    <script type="text/javascript" src="/scheme/obtain.js"></script>
     <script type="text/javascript" src="/scheme/script.js"></script>
     <script type="text/javascript" src="/scheme/points.js"></script>
     <title>Схема рекламы</title>

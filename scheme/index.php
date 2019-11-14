@@ -20,7 +20,7 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
 </div>
 <div class="container-fluid height100">
     <div class="row height80">
-        <div class="col-3">
+        <div class="col-4">
             <div class="tabs">
                 <div class="tab">
                     <input type="radio" id="tab1" name="tab-group"
@@ -212,9 +212,34 @@ require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
                         </div>
                     </section>
                 </div>
+                <div class="tab">
+                    <input type="radio" id="tab-for-commands"
+                           name="tab-group">
+                    <label for="tab-for-commands" class="tab-title">
+                        Редактирование
+                    </label>
+                    <section class="tab-content">
+                        <div>
+                            <button class="btn btn-block btn-info">
+                                Добавить
+                            </button>
+                            <button class="btn btn-block btn-primary">
+                                Переместить
+                            </button>
+                            <button disabled
+                                    class="btn btn-block btn-success">
+                                Сохранить
+                            </button>
+                            <button disabled
+                                    class="btn btn-block btn-danger">
+                                Отменить
+                            </button>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
-        <div id="map" class="col-9 padding5">
+        <div id="map" class="col-8 padding5">
         </div>
     </div>
 </div>
