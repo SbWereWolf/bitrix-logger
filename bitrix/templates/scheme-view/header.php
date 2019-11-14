@@ -34,7 +34,7 @@
     <script type="text/javascript" src="/scheme/js/compose-icons.js">
     </script>
     <script type="text/javascript" src="/scheme/js/obtain.js"></script>
-    <script type="text/javascript" src="/scheme/js/script.js"></script>
+    <script type="text/javascript" src="/scheme/js/on-load.js"></script>
     <script type="text/javascript" src="/scheme/js/points.js"></script>
     <title>Схема рекламы</title>
 </head>
