@@ -30,13 +30,14 @@
 
     <script type="text/javascript" src="/scheme/js/points.js"></script>
     <script type="text/javascript" src="/scheme/js/const.js"></script>
-    <script type="text/javascript" src="/scheme/js/compose-icons.js">
+    <script type="text/javascript" src="/scheme/js/icon-setup.js">
     </script>
     <script type="text/javascript" src="/scheme/js/landmark.js">
     </script>
-    <script type="text/javascript" src="/scheme/js/adjust-cluster.js">
+    <script type="text/javascript" src="/scheme/js/spreader.js">
     </script>
-    <script type="text/javascript" src="/scheme/js/obtain.js"></script>
+    <script type="text/javascript" src="/scheme/js/landmark-filter.js">
+    </script>
     <script type="text/javascript" src="/scheme/js/on-load.js"></script>
     <title>Схема рекламы</title>
 </head>
