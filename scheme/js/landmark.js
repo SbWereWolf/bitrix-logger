@@ -81,11 +81,31 @@ const landmark = {
         $(landmark.declineId).prop("disabled", true);
         $(landmark.addNewId).prop("disabled", false);
     },
-    storePlace: function () {
+    getCredentials: function () {
+        return {
+            login: Cookies.get("api-login"),
+            hash: Cookies.get("api-hash")
+        };
+    },
+    storePlace: async function () {
+        let data = landmark.getCredentials();
         const coords = placement.current.geometry.getCoordinates();
-        const y = coords[0];
-        const x = coords[1];
-        const number = placement.current.properties.get("info").number;
+        data.x = coords[1];
+        data.y = coords[0];
+        data.number = Number(placement.current.properties
+            .get("info").number);
+        data.call = 'store';
+
+        let response = await fetch('/scheme/api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+
+        let result = await response.json();
+        console.log(JSON.stringify(result));
     },
     addNew: function () {
         const coords = placement.newMark.geometry.getCoordinates();

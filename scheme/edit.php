@@ -1,8 +1,14 @@
 <?php
 define("NEED_AUTH", true);
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
+global $BITRIX_SM_UIDL, $BITRIX_SM_UIDH;
+setcookie("api-login", $BITRIX_SM_UIDL);
+setcookie("api-hash", $BITRIX_SM_UIDH);
 ?>
 <body class="height100">
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js">
+</script>
 <script type="text/javascript" src="/scheme/js/settings-edit.js">
 </script>
 <script type="text/javascript" src="/scheme/js/construct-options.js">
