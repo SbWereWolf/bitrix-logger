@@ -22,66 +22,124 @@ const painter = {
 
             landmark.changeCurrent(e);
 
-            const info = e.originalEvent.target.properties._data
-                .info;
-            let content =
-                `<dl>`
-                + `<dt>${captions.place_number}</dt>`
-                + `<dd>${info.place_number}</dd>`
-                + `<dt>${captions.place_title}</dt>`
-                + `<dd>${info.place_title}</dd>`
-                + `<dt>${captions.place_construct}</dt>`
-                + `<dd>${info.place_construct}</dd>`
-                + `<dt>${captions.place_location}</dt>`
-                + `<dd>${info.place_location}</dd>`
-                + `<dt>${captions.place_remark}</dt>`
-                + `<dd>${info.place_remark}</dd>`
-                + `<dt>${captions.place_x}</dt>`
-                + `<dd>${info.place_x}</dd>`
-                + `<dt>${captions.place_y}</dt>`
-                + `<dd>${info.place_y}</dd>`
-                + `<dt>${captions.place_number_of_sides}</dt>`
-                + `<dd>${info.place_number_of_sides}</dd>`
-                + `<dt>${captions.place_construct_area}</dt>`
-                + `<dd>${info.place_construct_area}</dd>`
-                + `<dt>${captions.place_field_type}</dt>`
-                + `<dd>${info.place_field_type}</dd>`
-                + `<dt>${captions.place_fields_number}</dt>`
-                + `<dd>${info.place_fields_number}</dd>`
-                + `<dt>${captions.place_construct_height}</dt>`
-                + `<dd>${info.place_construct_height}</dd>`
-                + `<dt>${captions.place_construct_width}</dt>`
-                + `<dd>${info.place_construct_width}</dd>`
-                + `<dt>${captions.place_fields_area}</dt>`
-                + `<dd>${info.place_fields_area}</dd>`
-                + `<dt>${captions.place_lightening}</dt>`
-                + `<dd>${info.place_lightening}</dd>`
-            ;
-
-            if (typeof info.place_permit_number
-                !== typeof undefined
-            ) {
-                content = content
-                    + `<dt>${captions.place_permit_number}</dt>`
-                    + `<dd>${info.place_permit_number}</dd>`
-                    + `<dt>${captions.place_permit_issuing_at}</dt>`
-                    + `<dd>${info.place_permit_issuing_at}</dd>`
-                    + `<dt>${captions.place_permit_start}</dt>`
-                    + `<dd>${info.place_permit_start}</dd>`
-                    + `<dt>${captions.place_permit_finish}</dt>`
-                    + `<dd>${info.place_permit_finish}</dd>`
-                    + `<dt>${captions.place_permit_distributor}</dt>`
-                    + `<dd>${info.place_permit_distributor}</dd>`
-                    + `<dt>${captions.place_permit_contract}</dt>`
-                    + `<dd>${info.place_permit_contract}</dd>`
-                ;
+            const info = e.originalEvent.target.properties.get("info");
+            let content = '';
+            if (settings.type === settings.admin) {
+                content = painter.forAdmin(info);
             }
-            content = `${content}</dl>`;
-
+            if (settings.type === settings.user) {
+                content = painter.forUser(info);
+            }
             $("#detail").html(content);
-            $("#tab-for-details").click();
 
+            if (settings.type === settings.user) {
+                $("#tab-for-details").click();
+            }
         });
         return point;
+    },
+    forAdmin: function (info) {
+        let content =
+            `<dl>`
+            + `<dt>${captions.number}</dt>`
+            + `<dd>${info.number}</dd>`
+            + `<dt>${captions.title}</dt>`
+            + `<dd>${info.title}</dd>`
+            + `<dt>${captions.construct}</dt>`
+            + `<dd>${info.construct}</dd>`
+            + `<dt>${captions.location}</dt>`
+            + `<dd>${info.location}</dd>`
+            + `<dt>${captions.remark}</dt>`
+            + `<dd>${info.remark}</dd>`
+            + `<dt>${captions.x}</dt>`
+            + `<dd>${info.x}</dd>`
+            + `<dt>${captions.y}</dt>`
+            + `<dd>${info.y}</dd>`
+            + `<dt>${captions.number_of_sides}</dt>`
+            + `<dd>${info.number_of_sides}</dd>`
+            + `<dt>${captions.construct_area}</dt>`
+            + `<dd>${info.construct_area}</dd>`
+            + `<dt>${captions.field_type}</dt>`
+            + `<dd>${info.field_type}</dd>`
+            + `<dt>${captions.fields_number}</dt>`
+            + `<dd>${info.fields_number}</dd>`
+            + `<dt>${captions.construct_height}</dt>`
+            + `<dd>${info.construct_height}</dd>`
+            + `<dt>${captions.construct_width}</dt>`
+            + `<dd>${info.construct_width}</dd>`
+            + `<dt>${captions.fields_area}</dt>`
+            + `<dd>${info.fields_area}</dd>`
+            + `<dt>${captions.lightening}</dt>`
+            + `<dd>${info.lightening}</dd>`
+        ;
+
+        if (typeof info.permit_number !== typeof undefined
+        ) {
+            content = content
+                + `<dt>${captions.permit_number}</dt>`
+                + `<dd>${info.permit_number}</dd>`
+                + `<dt>${captions.permit_issuing_at}</dt>`
+                + `<dd>${info.permit_issuing_at}</dd>`
+                + `<dt>${captions.permit_start}</dt>`
+                + `<dd>${info.permit_start}</dd>`
+                + `<dt>${captions.permit_finish}</dt>`
+                + `<dd>${info.permit_finish}</dd>`
+                + `<dt>${captions.permit_distributor}</dt>`
+                + `<dd>${info.permit_distributor}</dd>`
+                + `<dt>${captions.permit_contract}</dt>`
+                + `<dd>${info.permit_contract}</dd>`
+            ;
+        }
+        content = `${content}</dl>`;
+
+        return content;
+    },
+    forUser: function (info) {
+        let content =
+            `<dl>`
+            + `<dt>${captions.number}</dt>`
+            + `<dd>${info.number}</dd>`
+            + `<dt>${captions.title}</dt>`
+            + `<dd>${info.title}</dd>`
+            + `<dt>${captions.construct}</dt>`
+            + `<dd>${info.construct}</dd>`
+            + `<dt>${captions.location}</dt>`
+            + `<dd>${info.location}</dd>`
+            + `<dt>${captions.remark}</dt>`
+            + `<dd>${info.remark}</dd>`
+            + `<dt>${captions.x}</dt>`
+            + `<dd>${info.x}</dd>`
+            + `<dt>${captions.y}</dt>`
+            + `<dd>${info.y}</dd>`
+            + `<dt>${captions.number_of_sides}</dt>`
+            + `<dd>${info.number_of_sides}</dd>`
+            + `<dt>${captions.construct_area}</dt>`
+            + `<dd>${info.construct_area}</dd>`
+            + `<dt>${captions.field_type}</dt>`
+            + `<dd>${info.field_type}</dd>`
+            + `<dt>${captions.fields_number}</dt>`
+            + `<dd>${info.fields_number}</dd>`
+            + `<dt>${captions.construct_height}</dt>`
+            + `<dd>${info.construct_height}</dd>`
+            + `<dt>${captions.construct_width}</dt>`
+            + `<dd>${info.construct_width}</dd>`
+            + `<dt>${captions.fields_area}</dt>`
+            + `<dd>${info.fields_area}</dd>`
+            + `<dt>${captions.lightening}</dt>`
+            + `<dd>${info.lightening}</dd>`
+        ;
+
+        if (typeof info.permit_number !== typeof undefined
+        ) {
+            content = content
+                + `<dt>${captions.permit_finish}</dt>`
+                + `<dd>${info.permit_finish}</dd>`
+                + `<dt>${captions.permit_distributor}</dt>`
+                + `<dd>${info.permit_distributor}</dd>`
+            ;
+        }
+        content = `${content}</dl>`;
+
+        return content;
     }
 };

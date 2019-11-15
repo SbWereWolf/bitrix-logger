@@ -1,7 +1,8 @@
 landmarkFilter = {
+    searchId: "#show",
     define: function () {
         const filter = {types: [], address: ""};
-        const source = $("#search");
+        const source = $(landmarkFilter.searchId);
         const parameters = source.serializeArray();
         $.each(parameters, function (index, subject) {
             const isAddress = subject.name === "address";
