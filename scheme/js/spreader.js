@@ -1,8 +1,8 @@
 const spreader = {
     letClusterize: true,
     small: 20,
-    big: 50,
-    side: 50,
+    big: 30,
+    side: 20,
     compose: function (x, y) {
         return `http://yandex.ru/maps/?from=api-maps`
             + `&ll=${x}%2C${y}&panorama%5Bpoint%5D=${x}%2C${y}`;
@@ -17,11 +17,11 @@ const spreader = {
             spreader.side = spreader.big;
             cluster = new ymaps.Clusterer();
         }
+
         if (!spreader.letClusterize) {
             spreader.side = spreader.small;
         }
         $.each(points, function (index, place) {
-
             const allow = !doSelecting
                 || conditions.types.includes(place.construct);
 
@@ -32,8 +32,9 @@ const spreader = {
             const panorama = spreader.compose(place.x, place.y);
 
             let footer = "";
+            let name = place.name.split('(')[0];
             if (allow) {
-                header = `РК №${index} (${place.construct})`;
+                header = `<div class="ballon-header">${name}, ${index}</div>`;
                 body = `<p><ul><li>`
                     + `Адрес: <b>${place.location}</b>`
                     + `</li></ul></p>`

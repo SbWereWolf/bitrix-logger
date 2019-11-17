@@ -32,7 +32,6 @@ landmarkFilter = {
                 const firstGeoObject = res.geoObjects.get(0),
                     coords = firstGeoObject.geometry.getCoordinates(),
                     bounds = firstGeoObject.properties.get('boundedBy');
-
                 myMap.setCenter(coords);
                 myMap.setBounds(bounds, {
                     checkZoomRange: true

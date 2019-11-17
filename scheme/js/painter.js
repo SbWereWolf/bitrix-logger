@@ -13,11 +13,12 @@ const painter = {
             {
                 iconLayout: 'default#image',
                 iconImageClipRect: iconSet[place.construct],
-                iconImageHref: '/scheme/assets/icons.webp',
+                iconImageHref: './assets/rk_icons.png',
                 iconImageSize: [side, side],
-                iconImageOffset: [-0.5 * side, -0.5 * side]
+                iconImageOffset: [-0.5 * side, -1 * side]
             }
         );
+        //alert(side);
         point.events.add('click', function (e) {
 
             landmark.changeCurrent(e);
@@ -77,9 +78,8 @@ const painter = {
                 ;
             }
             content = `${content}</dl>`;
-
-            $("#detail").html(content);
-            $("#tab-for-details").click();
+            $("#profile").html(content);
+            //$("#tab-for-details").click();
 
         });
         return point;

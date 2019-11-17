@@ -8,6 +8,7 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "sbwerewolf/language-specific": "^7.0",
-    "ext-mysqli": "*"
+    "ext-mysqli": "*",
+    "carhartl/jquery-cookie": "*"
   }
 }

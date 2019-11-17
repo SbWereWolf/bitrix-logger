@@ -6,7 +6,8 @@ const landmark = {
                 .setCoordinates(placement.rollback);
             placement.current.options.set({draggable: false});
         }
-        placement.current = e.originalEvent.target;
+        if(typeof e.originalEvent.target  === 'undefined') placement.current = e.originalEvent.currentTarget;
+        else placement.current =  e.originalEvent.target;
         placement.rollback = placement.current.editor.geometry
             .getCoordinates();
     },
