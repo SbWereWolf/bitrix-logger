@@ -249,6 +249,20 @@ html, body {
 .lversion.lwf-3  .rk-profile { font-size: 20px; }
 .lversion.lwf-3  .rowdiv {font-size: 20px; }
 .lversion.lwc-4 #address { font-size: 24px;}
+@media print {
+    /* здесь будут стили для печати */
+    .lowvisiontriggerdiv { display: none;}
+    #leftTabs { display: none; }
+    .side-left { display: none; }
+    @page {
+        size: A4 landscape;
+    }
+
+    #map {
+        height: 100%;
+    }
+
+}
 
 
 
