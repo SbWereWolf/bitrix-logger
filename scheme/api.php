@@ -23,10 +23,9 @@ $hash = $cookies->get('api-hash')->str();
 $output = ['success' => false, 'message' => 'Not authorized'];
 $isSuccess = $USER->LoginByHash($login, $hash);
 if ($isSuccess) {
-    $stream = fopen('php://input', 'r');
-    $data = stream_get_contents($stream);
-    fclose($stream);
+    $data = $_POST['data'];
     $parameters = json_decode($data, true);
+    $parameters['DOCUMENT_ROOT'] = $_SERVER['DOCUMENT_ROOT'];
     $output = (new Api($parameters))->run();
 }
 $result = json_encode($output);

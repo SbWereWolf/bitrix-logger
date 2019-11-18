@@ -15,7 +15,7 @@ const spreader = {
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
-            cluster = new ymaps.Clusterer({minClusterSize:4});
+            cluster = new ymaps.Clusterer({minClusterSize: 4});
         }
 
         if (!spreader.letClusterize) {
@@ -32,6 +32,7 @@ const spreader = {
             const panorama = spreader.compose(place.x, place.y);
 
             let footer = "";
+            place.name = place.name + "";
             let name = place.name.split('(')[0];
             if (allow) {
                 header = `<div class="ballon-header">${name}, ${index}</div>`;

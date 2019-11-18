@@ -104,9 +104,9 @@ const landmark = {
         data.call = 'new';
 
         const coords = placement.newMark.geometry.getCoordinates();
-        const y = coords[0];
-        const x = coords[1];
-        const type = placement.type;
+        data.y = coords[0];
+        data.x = coords[1];
+        data.type = placement.type;
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);
@@ -115,8 +115,7 @@ const landmark = {
     publish:  function () {
         let data = landmark.getCredentials();
         data.call = 'publish';
-
-        const number = placement.current.properties.get("info").number;
+        data.number = placement.current.properties.get("info").number;
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);

@@ -5,8 +5,10 @@ namespace Topliner\Scheme;
 
 
 use Bitrix\Main\ORM\Data\DataManager;
+use Bitrix\Main\ORM\Query\Result;
 use CDatabase;
 use CIBlockElement;
+use CModule;
 use CUser;
 use Exception;
 use LanguageSpecific\ArrayHandler;
@@ -27,8 +29,10 @@ class Landmark
     public function process()
     {
         $output = ['success' => false, 'message' => 'Method not found'];
+        CModule::IncludeModule(Construct::IBLOCK);
+        CModule::IncludeModule('highloadblock');
 
-        $call = $this->parameters->get('call');
+        $call = $this->parameters->get('call')->str();
         switch ($call) {
             case'new':
                 $output = $this->new();
@@ -53,8 +57,7 @@ class Landmark
         global $DB;
 
         /** @var $dbConn mysqli */
-        $dbConn = $DB->db_Conn;
-        $dbConn->begin_transaction();
+        $DB->StartTransaction();
 
         $constructions = (new Reference('ConstructionTypes'))
             ->get();
@@ -74,8 +77,10 @@ class Landmark
             } catch (Exception $e) {
                 echo $e->getMessage();
             }
-            $type = $reference['UF_XML_ID'];
-            $title = $reference['UF_NAME'];
+            /* @var $name Result */
+            $record = $reference->Fetch();
+            $type = $record['UF_XML_ID'];
+            $title = $record['UF_NAME'];
         }
 
         $constSec = new BitrixSection(8, 6);
@@ -103,7 +108,7 @@ class Landmark
         $fail = false;
         if (!$isSuccess && !$fail) {
             $fail = true;
-            $dbConn->rollback();
+            $DB->Rollback();
             $details = var_export($fields, true);
             $output['message'] = "Fail add element : $details";
         }
@@ -112,7 +117,7 @@ class Landmark
             $output['id'] = $id;
 
             $payload = array(
-                'construct' => $type,
+                'type' => $type,
                 'longitude' => $this->parameters->get('x')->double(),
                 'latitude' => $this->parameters->get('y')->double(),
             );
@@ -123,13 +128,13 @@ class Landmark
 
         if (!$isSuccess && !$fail) {
             $fail = true;
-            $dbConn->rollback();
+            $DB->Rollback();
             $details = var_export($payload, true);
             $output['message'] = "Fail extend element : $details";
         }
 
         if ($isSuccess) {
-            $dbConn->commit();
+            $DB->Commit();
             $isSuccess = $this->writePoints();
         }
         if ($isSuccess) {
@@ -154,7 +159,8 @@ class Landmark
         $points = $construct->get();
         $json = json_encode($points);
         $json = "var points = $json;";
-        $file = fopen(realpath(__DIR__) . '/js/points.js', 'w');
+        $file = fopen($this->parameters->get('DOCUMENT_ROOT')->str()
+            . '/scheme/js/points.js', 'w');
 
         $isSuccess = $file !== false;
         if ($isSuccess) {
@@ -174,8 +180,7 @@ class Landmark
         global $DB;
 
         /** @var $dbConn mysqli */
-        $dbConn = $DB->db_Conn;
-        $dbConn->begin_transaction();
+        $DB->StartTransaction();
 
         $fields = array('MODIFIED_BY' => $USER->GetID(),);
         $id = $this->parameters->get('number')->int();
@@ -185,7 +190,7 @@ class Landmark
         $fail = false;
         if (!$isSuccess) {
             $fail = true;
-            $dbConn->rollback();
+            $DB->Rollback();
             $output['message'] = 'Fail update construction';
         }
         if ($isSuccess) {
@@ -199,7 +204,7 @@ class Landmark
                 $constSec->getBlock(),
                 $payload);
 
-            $dbConn->commit();
+            $DB->Commit();
             $isSuccess = $this->writePoints();
         }
         if (!$isSuccess && !$fail) {
