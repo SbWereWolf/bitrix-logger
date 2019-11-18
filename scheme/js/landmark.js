@@ -108,14 +108,42 @@ const landmark = {
         let result = await response.json();
         console.log(JSON.stringify(result));
     },
-    addNew: function () {
+    addNew: async function () {
+        let data = landmark.getCredentials();
+        data.call = 'new';
+
         const coords = placement.newMark.geometry.getCoordinates();
         const y = coords[0];
         const x = coords[1];
         const type = placement.type;
+
+        let response = await fetch('/scheme/api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+
+        let result = await response.json();
+        console.log(JSON.stringify(result));
     },
-    publish: function () {
+    publish: async function () {
+        let data = landmark.getCredentials();
+        data.call = 'publish';
+
         const number = placement.current.properties.get("info").number;
+
+        let response = await fetch('/scheme/api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+
+        let result = await response.json();
+        console.log(JSON.stringify(result));
     },
     acceptAction: function () {
         if (landmark.action === landmark.add) {
