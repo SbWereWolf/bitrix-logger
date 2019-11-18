@@ -6,6 +6,7 @@
 /backup/**
 /bitrix/**
 !/bitrix/.settings.php.example
+!/bitrix/php_interface/init.php
 !/bitrix/php_interface/dbconn.php.example
 !/bitrix/php_interface/after_connect.php.example
 !/bitrix/php_interface/after_connect_d7.php.example

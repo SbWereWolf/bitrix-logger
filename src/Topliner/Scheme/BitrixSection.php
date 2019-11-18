@@ -14,11 +14,17 @@ class BitrixSection
      * @var int
      */
     private $section;
+    /**
+     * @var string
+     */
+    private $item;
 
-    public function __construct($block = 0, $section = 0)
+
+    public function __construct($block = 0, $section = 0, $item = '')
     {
         $this->block = (int)$block;
         $this->section = (int)$section;
+        $this->item = (string)$item;
     }
 
     /**
@@ -35,6 +41,14 @@ class BitrixSection
     public function getSection(): int
     {
         return $this->section;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->item;
     }
 
 }
