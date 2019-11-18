@@ -1,5 +1,9 @@
 /* myMap = new ymaps.Map("map", {}); */
 let myMap = null;
+const x = 61.26;
+const y = 55.03;
+const xx = 61.54;
+const yy = 55.29;
 /* Объект с метками:
 current выбранная для редактирования
 new - добавляемая */

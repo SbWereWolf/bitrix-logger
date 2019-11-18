@@ -13,7 +13,7 @@ const painter = {
             {
                 iconLayout: 'default#image',
                 iconImageClipRect: iconSet[place.construct],
-                iconImageHref: './assets/rk_icons.png',
+                iconImageHref: '/scheme/assets/rk_icons.png',
                 iconImageSize: [side, side],
                 iconImageOffset: [-0.5 * side, -1 * side]
             }

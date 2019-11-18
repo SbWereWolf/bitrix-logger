@@ -4,7 +4,7 @@ const settings = {
     admin: "admin",
     user: "user",
     setup: function () {
-        $(landmarkFilter.searchId).on("click", landmarkFilter.run);
+        $('.clicktofind').on("click", landmarkFilter.run);
     },
 };
 jQuery(function () {

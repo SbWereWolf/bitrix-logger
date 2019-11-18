@@ -35,41 +35,39 @@ const painter = {
         }
         let image = "";
         info.place_images.forEach(function (val, index, arr) {
-            image += `<div class="row"><div class="col-12">`
-                + `<img src="${val}" class="img-thumbnail" alt="photo"/>`
-                + `</div></div>`;
+            image += "<div class=\"row\"><div class=\"col-12\"><img src=\"" + val + "\" class=\"img-thumbnail\" alt=\"photo\"/></div></div>";
         });
         let address = info.place_remark
             ? info.place_remark : info.place_location;
         let content =
-            `<h4>${info.place_title}, ${info.place_number}</h4>`
+            "<h4>" + info.place_title + ","  + info.place_number + "</h4>"
             + image
-            + `<dl class="rk-profile">`
-            + `<dt>${captions.place_location}</dt>`
-            + `<dd>${address}</dd>`
-            + `<dt>${captions.place_construct}</dt>`
-            + `<dd>${info.place_construct}</dd>`//--
-            + `<dt>${captions.place_construct_area}</dt>`
-            + `<dd>${info.place_construct_area}</dd>`
+            + "<dl class=\"rk-profile\">"
+            + "<dt>" + captions.place_location + "</dt>"
+            + "<dd>" + address + "</dd>"
+            + "<dt>" + captions.place_construct + "</dt>"
+            + "<dd>" + info.place_construct + "</dd>"
+            + "<dt>" + captions.place_construct_area + "</dt>"
+            + "<dd>" + info.place_construct_area + "</dd>"
         ;
 
         if (typeof info.place_permit_number
             !== typeof undefined
         ) {
             content = content
-                + `<dt>${captions.place_permit_number}</dt>`
-                + `<dd>${info.place_permit_number}</dd>`
-                + `<dt>${captions.place_permit_issuing_at}</dt>`
-                + `<dd>${info.place_permit_issuing_at}</dd>`
-                + `<dt>${captions.place_permit_start}</dt>`
-                + `<dd>${info.place_permit_start}</dd>`
-                + `<dt>${captions.place_permit_finish}</dt>`
-                + `<dd>${info.place_permit_finish}</dd>`
-                + `<dt>${captions.place_permit_distributor}</dt>`
-                + `<dd>${info.place_permit_distributor}</dd>`
+                + "<dt>" + captions.place_permit_number + "</dt>"
+                + "<dd>" + info.place_permit_number + "</dd>"
+                + "<dt>" + captions.place_permit_issuing_at + "</dt>"
+                + "<dd>" + info.place_permit_issuing_at+ "</dd>"
+                + "<dt>" + captions.place_permit_start+ "</dt>"
+                + "<dd>" + info.place_permit_start+ "</dd>"
+                + "<dt>" + captions.place_permit_finish+ "</dt>"
+                + "<dd>" + info.place_permit_finish+ "</dd>"
+                + "<dt>" + captions.place_permit_distributor+ "</dt>"
+                + "<dd>" + info.place_permit_distributor + "</dd>"
             ;
         }
-        content = `${content}</dl>`;
+        content = content + "</dl>";
         $("#profile").html(content);
         $('#profile-tab').tab('show');
 
@@ -99,7 +97,7 @@ const painter = {
             {
                 iconLayout: 'default#image',
                 iconImageClipRect: iconSet[place.construct],
-                iconImageHref: './assets/rk_icons.png',
+                iconImageHref: '/scheme/assets/rk_icons.png',
                 iconImageSize: [side, side],
                 iconImageOffset: [-0.5 * side, -1 * side]
             }

@@ -15,7 +15,7 @@ const spreader = {
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
-            cluster = new ymaps.Clusterer();
+            cluster = new ymaps.Clusterer({minClusterSize:4});
         }
 
         if (!spreader.letClusterize) {
