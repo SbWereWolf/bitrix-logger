@@ -1,70 +1,79 @@
-const x = 61.26;
-const y = 55.03;
-const xx = 61.54;
-const yy = 55.29;
-$(document).ready(function ($) {
-    if($.cookie('lwversion')) switchLWVersion($.cookie('lwversion'));
-    function init() {
-        function setupMap() {
-            sCenter = [(yy - y) / 2 + y, (xx - x) / 2 + x];
-
-            myMap = new ymaps.Map("map", {
-                // Координаты центра карты: «широта, долгота».
-                center: sCenter,
-                // Уровень масштабирования: от 0 (весь мир) до 19.
-                zoom: 16.0
-            });
-        }
-
-        iconSetup.compose();
-        setupMap();
-        spreader.place();
+jQuery(function ($) {
+    const lowVision = Cookies.get("lwversion");
+    if (typeof lowVision !== typeof undefined) {
+        switchLWVersion(lowVision);
     }
-    ymaps.ready(init);
-
-    $("#search").on("click", landmarkFilter.run);
-    $("#add-new").on("click", landmark.startAddNew);
-    $("#move").on("click", landmark.startMoving);
-    $("#accept").on("click", landmark.acceptAction);
-    $("#decline").on("click", landmark.declineAction);
-
-    const options = selectWithTypes.get();
-    $("#construct-types").html(options);
-
-    $("#enable").on("click", function () {
-        spreader.letClusterize = true;
-        landmarkFilter.run();
+    $(landmarkFilter.searchId).submit(function (event) {
+        event.preventDefault();
+        return false;
     });
-    $("#disable").on("click", function () {
-        spreader.letClusterize = false;
-        landmarkFilter.run();
-    });
+    iconSetup.compose();
+    const waitFor = 500;
+    let waitSettings = setTimeout(function makeMapReady() {
+        let isReady = settings.ready;
+        if (isReady) {
+            settings.setup();
+
+            function init() {
+                function setupMap() {
+                    sCenter = [(yy - y) / 2 + y, (xx - x) / 2 + x];
+
+                    myMap = new ymaps.Map("map", {
+                        // Координаты центра карты: «широта, долгота».
+                        center: sCenter,
+                        // Уровень масштабирования: от 0 (весь мир) до 19.
+                        zoom: 16.0
+                    });
+                    if (settings.admin) {
+                        myMap.events
+                            .add('balloonopen', function () {
+                                landmark.enableMenu();
+                            })
+                            .add('balloonclose', function () {
+                                landmark.disableMenu();
+                                $(landmark.addNewId).prop("disabled",
+                                    false);
+                            });
+                    }
+                }
+
+                setupMap();
+                spreader.place();
+            }
+
+            ymaps.ready(init);
+        }
+        if (!isReady) {
+            waitSettings = setTimeout(makeMapReady, waitFor);
+        }
+    }, waitFor);
 });
+
 function switchLWVersion(on) {
-    if(on && on != '00') {
-        if(on === 1 && $.cookie('lwversion')) on = "11";
-        else if($.cookie('lwversion')) {
-            const oldf = $.cookie('lwversion').charAt(0) * 1;
-            const oldc = $.cookie('lwversion').charAt(1) * 1;
+    if (on && on != '00') {
+        if (on === 1 && Cookies.get("lwversion")) on = "11";
+        else if (typeof Cookies.get("lwversion") !== typeof undefined) {
+            const oldf = Cookies.get("lwversion").charAt(0) * 1;
+            const oldc = Cookies.get("lwversion").charAt(1) * 1;
             const newf = on.charAt(0);
             const newc = on.charAt(1);
             let f = 1;
             let c = 1;
-            if(newf * 1 != 0) f = newf;
+            if (newf * 1 != 0) f = newf;
             else c = oldf ? oldf : 1;
-            if(newc * 1 != 0) c = newc;
+            if (newc * 1 != 0) c = newc;
             else c = oldc ? oldc : 1;
             on = f + '' + c;
-        }
-        else on = 11;
+        } else on = 11;
         let version = on + '';
-        $.cookie('lwversion', on, { expires: 365 });
-        $('body').attr('class','');
-        $('body').addClass('lversion');
-        $('body').addClass('lversion lwf-' + on.charAt(0));
-        $('body').addClass('lversion lwc-' + (on.charAt(1) ? on.charAt(1) : '1'));
+        Cookies.set('lwversion', on, {expires: 365});
+        const bodyEl = $('body');
+        bodyEl.attr('class', '');
+        bodyEl.addClass('lversion');
+        bodyEl.addClass('lversion lwf-' + on.charAt(0));
+        bodyEl.addClass('lversion lwc-' + (on.charAt(1) ? on.charAt(1) : '1'));
     } else {
-        $.cookie('lwversion', '00', { expires: 365 });
-        $('body').attr('class','');
+        Cookies.set('lwversion', '00', {expires: 365});
+        $('body').attr('class', '');
     }
 }

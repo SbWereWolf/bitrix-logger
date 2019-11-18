@@ -1,11 +1,11 @@
 const painter = {
-    setProfileByIndex : function(index) {
+    setProfileByIndex: function (index) {
         const place = points[index];
         let name = place.name.split('(')[0];
         name = name.charAt(0).toUpperCase() + name.slice(1);
 
         let info = {
-            place_images:place.images,
+            place_images: place.images,
             place_title: place.title ? place.title : name,
             place_construct: place.name,
             place_location: place.location,
@@ -22,7 +22,7 @@ const painter = {
             place_lightening: place.lightening,
             place_number: index,
         };
-        if(place.permit) {
+        if (place.permit) {
             const issuing_at = spreader.getDateString(place.permit.issuing_at);
             const start = spreader.getDateString(place.permit.start);
             const finish = spreader.getDateString(place.permit.finish);
@@ -34,10 +34,13 @@ const painter = {
             info['place_permit_contract'] = place.permit.contract;
         }
         let image = "";
-        info.place_images.forEach(function(val, index, arr) {
-            image += `<div class="row"><div class="col-12"><img src="${val}" class="img-thumbnail" /></div></div>`;
+        info.place_images.forEach(function (val, index, arr) {
+            image += `<div class="row"><div class="col-12">`
+                + `<img src="${val}" class="img-thumbnail" alt="photo"/>`
+                + `</div></div>`;
         });
-        let address = info.place_remark ? info.place_remark : info.place_location;
+        let address = info.place_remark
+            ? info.place_remark : info.place_location;
         let content =
             `<h4>${info.place_title}, ${info.place_number}</h4>`
             + image
@@ -71,17 +74,16 @@ const painter = {
         $('#profile-tab').tab('show');
 
     },
-    setProfile : function (e) {
+    setProfile: function (e) {
 
         landmark.changeCurrent(e);
 
         let info = null;
-        if (typeof e.originalEvent.target  !== 'undefined') info = e.originalEvent.target.properties._data.info;
-        else info =  e.originalEvent.currentTarget.properties._data.info;
-        //this.setProfileByIndex(info.place_number);
-
-        //$("#tab-for-details").click();
-
+        if (typeof e.originalEvent.target !== 'undefined') {
+            info = e.originalEvent.target.properties._data.info;
+        } else {
+            info = e.originalEvent.currentTarget.properties._data.info;
+        }
     },
     mark: function (place, index, header, body,
                     footer, details, iconSet, side) {
@@ -102,7 +104,6 @@ const painter = {
                 iconImageOffset: [-0.5 * side, -1 * side]
             }
         );
-        //alert(side);
         point.events.add('balloonclose', function (e) {
             $('#home-tab').tab('show');
         });
@@ -110,10 +111,11 @@ const painter = {
         point.events.add('balloonopen', this.setProfile);
         return point;
     },
-    setPanorama: function(index) {
+    setPanorama: function (index) {
         const place = points[index];
         const cootdinates = [place.y, place.x];
-        $('#panoramaModal').modal('show');
+        const panoramaModal = "#panoramaModal";
+        $(panoramaModal).modal('show');
         let player;
         ymaps.panorama.locate(cootdinates).done(
             function (panoramas) {
@@ -122,12 +124,12 @@ const painter = {
                         'rkPanorama',
                         panoramas[0],
                         {
-                            controls:"panoramaName"
+                            controls: "panoramaName"
                         }
                     );
                 }
-                player.events.add('destroy', function(e) {
-                   $('#panoramaModal').modal('hide');
+                player.events.add('destroy', function (e) {
+                    $(panoramaModal).modal('hide');
                 });
             },
             function (error) {
@@ -135,8 +137,8 @@ const painter = {
                 alert(error.message);
             }
         );
-        $('#panoramaModal').on('hidden.bs.modal', function (e) {
-            if(player._engine) player.destroy();
+        $(panoramaModal).on('hidden.bs.modal', function (e) {
+            if (player._engine) player.destroy();
         })
         //rkPanorama
     }

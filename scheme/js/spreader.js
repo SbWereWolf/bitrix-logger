@@ -1,8 +1,8 @@
 const spreader = {
     letClusterize: true,
-    small: 20,
-    big: 30,
-    side: 20,
+    small: 30,
+    big: 50,
+    side: 50,
     compose: function (x, y) {
         return `http://yandex.ru/maps/?from=api-maps`
             + `&ll=${x}%2C${y}&panorama%5Bpoint%5D=${x}%2C${y}`;
@@ -63,32 +63,32 @@ const spreader = {
                 const finish = spreader.getDateString(place.permit.finish);
 
                 permitInfo = {
-                    place_permit_number: place.permit.number,
-                    place_permit_issuing_at: issuing_at,
-                    place_permit_start: start,
-                    place_permit_finish: finish,
-                    place_permit_distributor: place.permit.distributor,
-                    place_permit_contract: place.permit.contract,
+                    permit_number: place.permit.number,
+                    permit_issuing_at: issuing_at,
+                    permit_start: start,
+                    permit_finish: finish,
+                    permit_distributor: place.permit.distributor,
+                    permit_contract: place.permit.contract,
                 };
             }
             let placeInfo = {};
             if (allow) {
                 placeInfo = {
-                    place_title: place.title,
-                    place_construct: place.name,
-                    place_location: place.location,
-                    place_remark: place.remark,
-                    place_x: place.x,
-                    place_y: place.y,
-                    place_number_of_sides: place.number_of_sides,
-                    place_construct_area: place.construct_area,
-                    place_field_type: place.field_type,
-                    place_fields_number: place.fields_number,
-                    place_construct_height: place.construct_height,
-                    place_construct_width: place.construct_width,
-                    place_fields_area: place.fields_area,
-                    place_lightening: place.lightening,
-                    place_number: index,
+                    title: place.title,
+                    construct: place.name,
+                    location: place.location,
+                    remark: place.remark,
+                    x: place.x,
+                    y: place.y,
+                    number_of_sides: place.number_of_sides,
+                    construct_area: place.construct_area,
+                    field_type: place.field_type,
+                    fields_number: place.fields_number,
+                    construct_height: place.construct_height,
+                    construct_width: place.construct_width,
+                    fields_area: place.fields_area,
+                    lightening: place.lightening,
+                    number: index,
                 };
                 const details = Object.assign(placeInfo, permitInfo);
                 const side = Number(spreader.side);

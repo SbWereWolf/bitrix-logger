@@ -11,6 +11,15 @@ const landmark = {
         placement.rollback = placement.current.editor.geometry
             .getCoordinates();
     },
+    enableMenu: function () {
+        $(landmark.moveId).prop("disabled", false);
+        $(landmark.publishId).prop("disabled", false);
+        $(landmark.addNewId).prop("disabled", true);
+    },
+    disableMenu: function () {
+        $(landmark.moveId).prop("disabled", true);
+        $(landmark.publishId).prop("disabled", true);
+    },
     startMoving: function () {
         landmark.action = landmark.move;
         landmark.start();
@@ -55,31 +64,71 @@ const landmark = {
     add: "add",
     idle: "idle",
     action: "idle",
+    acceptId: "#accept",
+    declineId: "#decline",
+    addNewId: "#add-new",
+    moveId: "#move",
+    publishId: "#publish",
+    constructTypesId: "#construct-types",
     start: function () {
-        $("#accept").prop("disabled", false);
-        $("#decline").prop("disabled", false);
+        $(landmark.acceptId).prop("disabled", false);
+        $(landmark.declineId).prop("disabled", false);
+        landmark.disableMenu();
+        $(landmark.addNewId).prop("disabled", true);
     },
     finish: function () {
         landmark.action = landmark.idle;
-        $("#accept").prop("disabled", true);
-        $("#decline").prop("disabled", true);
+        $(landmark.acceptId).prop("disabled", true);
+        $(landmark.declineId).prop("disabled", true);
+        $(landmark.addNewId).prop("disabled", false);
     },
-    storeCoordinates: function () {
+    getCredentials: function () {
+        return {
+            login: Cookies.get("api-login"),
+            hash: Cookies.get("api-hash")
+        };
+    },
+    storePlace: async function () {
+        let data = landmark.getCredentials();
+        const coords = placement.current.geometry.getCoordinates();
+        data.x = coords[1];
+        data.y = coords[0];
+        data.number = Number(placement.current.properties
+            .get("info").number);
+        data.call = 'store';
+
+        let response = await fetch('/scheme/api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+
+        let result = await response.json();
+        console.log(JSON.stringify(result));
     },
     addNew: function () {
+        const coords = placement.newMark.geometry.getCoordinates();
+        const y = coords[0];
+        const x = coords[1];
+        const type = placement.type;
+    },
+    publish: function () {
+        const number = placement.current.properties.get("info").number;
     },
     acceptAction: function () {
         if (landmark.action === landmark.add) {
+            landmark.addNew();
             placement.newMark.options.set({draggable: false});
             placement.newMark = {};
             landmark.finish();
-            landmark.addNew();
         }
         if (landmark.action === landmark.move) {
+            landmark.storePlace();
             placement.current.options.set({draggable: false});
             placement.current = {};
             landmark.finish();
-            landmark.storeCoordinates();
         }
     },
     declineAction: function () {
