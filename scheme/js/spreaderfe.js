@@ -4,18 +4,20 @@ const spreader = {
     big: 30,
     side: 20,
     compose: function (x, y) {
-        return `http://yandex.ru/maps/?from=api-maps`
-            + `&ll=${x}%2C${y}&panorama%5Bpoint%5D=${x}%2C${y}`;
+        return 'http://yandex.ru/maps/?from=api-maps'
+            + '&ll=' + x + '%2C' + y + '&panorama%5Bpoint%5D=' + x + '%2C' + y;
     }, getDateString: function (unixTime) {
         return (new Date(unixTime * 1000))
             .toLocaleDateString("ru-RU");
     },
-    place: function (conditions = {types: [], address: ""}) {
+    place: function (conditions) {
+        if(!conditions) conditions = conditions = {types: [], address: "" };
+        console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
-            cluster = new ymaps.Clusterer();
+            cluster = new ymaps.Clusterer({maxZoom:17});
             cluster.balloon.events.add('open', function(e) {
                 //alert(e);
             })
@@ -25,7 +27,7 @@ const spreader = {
         }
         $.each(points, function (index, place) {
             const allow = !doSelecting
-                || conditions.types.includes(place.construct);
+                || (conditions.types.indexOf(place.construct) != -1);
 
             const hasPermit = typeof place.permit !== typeof undefined;
 
@@ -40,26 +42,26 @@ const spreader = {
             if(typeof place.images !== 'undefined' && place.images[0]) {
                 image = place.images[0];
             } else {
-                place.images = ["./assets/4218-1.JPG"];
-                image = "./assets/4218-1.JPG";
+                place.images = ["/scheme/assets/layout.png"];
+                image = "/scheme/assets/layout.png";
             }
             if (allow) {
-                header = `<div class="ballon-header">${name}, ${index}</div>`;
-                body = `<div class="ballon-content row" style="margin-right:-30px; margin-left:0px">`
-                    + `<div class="col-6 image" style="padding-right:0px;">`
-                    + `<img src="${image}" class="img-thumbnail rounded-0 "/>`
-                    + `</div><div class="col-6">`
-                    + `<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>${place.location}</strong></div>`
-                    + `<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>${place.name}</strong></div></div></div>`;
-                    footer = ``
-                    + `<div class="row" style="margin-right:-15px; margin-left:0px""><div class="col-6" style="padding-right:0px;">`
-                    + `<a class="btn btn-outline-primary btn-block"`
-                    + ` href="#" onclick="painter.setPanorama(${index}); return false;">`
-                    + `Панорама</a></div><div class="col-6" style="margin-left:0px;">`
-                    + `<a class="btn btn-primary btn-block" `
-                    + ` target="_blank"`
-                    + ` href="#" onclick="painter.setProfileByIndex(${index});return false">`
-                    + `Подробности</a></div></div>`;
+                header = '<div class="ballon-header">' + name+ ', ' + index+ '</div>';
+                body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0px">'
+                    + '<div class="col-6 image" style="padding-right:0px;">'
+                    + '<img src="' + image+ '" class="img-thumbnail rounded-0 "/>'
+                    + '</div><div class="col-6">'
+                    + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location+ '</strong></div>'
+                    + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name+ '</strong></div></div></div>';
+                    footer = ''
+                    + '<div class="row" style="margin-right:-15px; margin-left:0px""><div class="col-6" style="padding-right:0px;">'
+                    + '<a class="btn btn-outline-primary btn-block"'
+                    + ' href="#" onclick="painter.setPanorama(' + index+ '); return false;">'
+                    + 'Панорама</a></div><div class="col-6" style="margin-left:0px;">'
+                    + '<a class="btn btn-primary btn-block" '
+                    + ' target="_blank"'
+                    + ' href="#" onclick="painter.setProfileByIndex(' + index+ ');return false">'
+                    + 'Подробности</a></div></div>';
 
             }
             let iconSet = [];
@@ -69,22 +71,7 @@ const spreader = {
             if (allow && hasPermit) {
                 iconSet = iconSetup.inLease;
             }
-            let permitInfo = {};
-            if (allow && typeof place.permit !== typeof undefined) {
 
-                const issuing_at = spreader.getDateString(place.permit.issuing_at);
-                const start = spreader.getDateString(place.permit.start);
-                const finish = spreader.getDateString(place.permit.finish);
-
-                permitInfo = {
-                    place_permit_number: place.permit.number,
-                    place_permit_issuing_at: issuing_at,
-                    place_permit_start: start,
-                    place_permit_finish: finish,
-                    place_permit_distributor: place.permit.distributor,
-                    place_permit_contract: place.permit.contract,
-                };
-            }
             let placeInfo = {};
             if (allow) {
                 placeInfo = {
@@ -105,7 +92,21 @@ const spreader = {
                     place_lightening: place.lightening,
                     place_number: index,
                 };
-                const details = Object.assign(placeInfo, permitInfo);
+                if (allow && typeof place.permit !== typeof undefined) {
+
+                    const issuing_at = spreader.getDateString(place.permit.issuing_at);
+                    const start = spreader.getDateString(place.permit.start);
+                    const finish = spreader.getDateString(place.permit.finish);
+
+                    placeInfo.place_permit_number =  place.permit.number;
+                    placeInfo.place_permit_issuing_at = issuing_at;
+                    placeInfo.place_permit_start = start;
+                    placeInfo.place_permit_finish = finish;
+                    placeInfo.place_permit_distributor = place.permit.distributor;
+                    placeInfo.place_permit_contract = place.permit.contract;
+                }
+                //const details = Object.assign(placeInfo, permitInfo);
+                details = placeInfo;
                 const side = Number(spreader.side);
 
                 const point = painter.mark(place, index, header, body,

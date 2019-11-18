@@ -38,15 +38,13 @@ const landmark = {
         place.construct = types[$("#construct-types").val()];
         place.location = "";
         const index = "б/н";
-        const header = `РК №${index} (${place.construct})`;
-        const body = `<p><ul><li>`
-            + `Адрес: <b>${place.location}</b>`
-            + `</li></ul></p>`
-            + `<a class="btn btn-block btn-success"`
-            + ` target="_blank"`
-            + ` href="${panorama}">`
-            + `Открыть панораму</a>`
-        ;
+        const header = "РК №" + index + "(" + place.construct + ")";
+        const body = "<p><ul><li>"
+            + "Адрес: <b>" + place.location + "</b>"
+            + "</li></ul></p>"
+            + "<a class=\"btn btn-block btn-success\""
+            + " target=\"_blank\""
+            + " href=\"" + panorama + "\">Открыть панораму</a>";
         const footer = place.name;
 
         const point = painter.mark(place, index, header, body,
@@ -88,7 +86,7 @@ const landmark = {
             hash: Cookies.get("api-hash")
         };
     },
-    storePlace: async function () {
+    storePlace:  function () {
         let data = landmark.getCredentials();
         const coords = placement.current.geometry.getCoordinates();
         data.x = coords[1];
@@ -97,18 +95,11 @@ const landmark = {
             .get("info").number);
         data.call = 'store';
 
-        let response = await fetch('/scheme/api.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: JSON.stringify(data)
-        });
-
-        let result = await response.json();
-        console.log(JSON.stringify(result));
+        $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
+            console.log(result);
+        }, 'json');
     },
-    addNew: async function () {
+    addNew: function () {
         let data = landmark.getCredentials();
         data.call = 'new';
 
@@ -117,33 +108,19 @@ const landmark = {
         const x = coords[1];
         const type = placement.type;
 
-        let response = await fetch('/scheme/api.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: JSON.stringify(data)
-        });
-
-        let result = await response.json();
-        console.log(JSON.stringify(result));
+        $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
+            console.log(result);
+        }, 'json');
     },
-    publish: async function () {
+    publish:  function () {
         let data = landmark.getCredentials();
         data.call = 'publish';
 
         const number = placement.current.properties.get("info").number;
 
-        let response = await fetch('/scheme/api.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: JSON.stringify(data)
-        });
-
-        let result = await response.json();
-        console.log(JSON.stringify(result));
+        $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
+            console.log(result);
+        }, 'json');
     },
     acceptAction: function () {
         if (landmark.action === landmark.add) {
