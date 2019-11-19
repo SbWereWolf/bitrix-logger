@@ -14,9 +14,13 @@ class Logger
     const REMOVE = 'remove';
     const CREATE = 'create';
     /**
-     * @var ArrayHandler
+     * @var array
      */
     private static $before = null;
+    /**
+     * @var array
+     */
+    private static $names = null;
 
     /**
      * @var string
@@ -32,7 +36,12 @@ class Logger
     /**/
     public static function afterAdd(array &$arFields)
     {
-        static::$operation = self::CREATE;
+        $id = (int)$arFields['ID'];
+        $element = static::getBlockAndSection($id);
+        $sectionId = $element ? $element['IBLOCK_SECTION_ID'] : 0;
+        if ($sectionId !== 0) {
+            $arFields['IBLOCK_SECTION_ID'] = $sectionId;
+        }
 
         $fields = new ArrayHandler($arFields);
         list($isAcceptable, $title) = static::isAllow($fields);
@@ -72,6 +81,7 @@ class Logger
         }
         $isSuccess = !empty($id);
         if ($isSuccess) {
+            static::$operation = self::CREATE;
 
             $payload = array(
                 'timestamp' => $date,
@@ -114,19 +124,9 @@ class Logger
             $sectionId = $fields->pull('IBLOCK_SECTION')
                 ->get()->int();
         }
-
-        $isPermit = false;
-        $isConstruct = false;
-        $title = '';
-        if (static::$operation === self::REMOVE) {
-            list($title, $isPermit, $isConstruct) =
-                self::shortCheck($blockId, $permits, $constructs);
-        }
-        if (static::$operation !== self::REMOVE) {
-            list($title, $isPermit, $isConstruct) =
-                self::fullCheck($blockId, $sectionId,
-                    $permits, $constructs);
-        }
+        list($isPermit, $isConstruct, $title) =
+            static::fullCheck($blockId, $sectionId,
+                $permits, $constructs);
 
         $isAcceptable = $isPermit || $isConstruct;
         return array($isAcceptable, $title);
@@ -142,7 +142,12 @@ class Logger
 
     public static function OnUpdate(array &$newFields, array &$ar_wf_element)
     {
-        static::$operation = self::CHANGE;
+        $id = (int)$newFields['ID'];
+        $element = static::getBlockAndSection($id);
+        $sectionId = $element ? $element['IBLOCK_SECTION_ID'] : 0;
+        if ($sectionId !== 0) {
+            $newFields['IBLOCK_SECTION_ID'] = $sectionId;
+        }
 
         $fields = new ArrayHandler($newFields);
         list($isAcceptable) = static::isAllow($fields);
@@ -156,124 +161,369 @@ class Logger
             {
                 echo '7';
             }
+*/
+    /**
+     * @param int $id
+     */
+    public static function beforeDelete($id)
+    {
+        $element = static::getBlockAndSection($id);
+        list($isPermit, $isConstruct) =
+            static::fullCheck((int)$element['IBLOCK_ID'],
+                (int)$element['IBLOCK_SECTION_ID'],
+                (new BitrixSection(7, 7)),
+                (new BitrixSection(8, 6)));
 
-            public static  function beforeDelete(int $id)
-            {
-                echo '8';
-            }
-    */
-
-        public static  function afterDelete(array &$arFields)
-        {
+        $isAcceptable = $isPermit || $isConstruct;
+        if ($isAcceptable) {
+            static::$before = $element;
             static::$operation = self::REMOVE;
+        }
 
-            $fields = new ArrayHandler($arFields);
-            list($isAcceptable, $title) = static::isAllow($fields);
 
-            $itemId = 0;
-            $isOk = false;
-            if ($isAcceptable) {
-                $itemId = $fields->get('ID')->int();
-                $isOk = $itemId > 0;
+    }
+
+    public static function afterDelete(array &$arFields)
+    {
+        if (!empty(static::$before)) {
+            $arFields['IBLOCK_SECTION_ID']
+                = static::$before['IBLOCK_SECTION_ID'];
+        };
+        $fields = new ArrayHandler($arFields);
+        list($isAcceptable, $title) = static::isAllow($fields);
+
+        $itemId = 0;
+        $isOk = false;
+        if ($isAcceptable) {
+            $itemId = $fields->get('ID')->int();
+            $isOk = $itemId > 0;
+        }
+
+        $audit = new BitrixSection(9, 12, 'аудит');
+        $id = 0;
+        $date = '';
+        $login = '';
+        if ($isOk) {
+            /* @var $USER CUser */
+            global $USER;
+            $userId = $USER->GetID();
+            $login = $USER->GetLogin();
+            $date = ConvertTimeStamp(time(), 'FULL');
+            $record = array(
+                'CREATED_BY' => $userId,
+                'IBLOCK_ID' => $audit->getBlock(),
+                'IBLOCK_SECTION_ID' => $audit->getSection(),
+                'ACTIVE_FROM' => $date,
+                'ACTIVE' => 'Y',
+                'NAME' => "$login удалил $title №$itemId",
+                'PREVIEW_TEXT' => '',
+                'PREVIEW_TEXT_TYPE' => 'text',
+                'WF_STATUS_ID' => 1,
+                'IN_SECTIONS' => 'Y',
+            );
+
+            $element = new CIBlockElement();
+            $id = $element->Add($record);
+        }
+        $isSuccess = !empty($id);
+        if ($isSuccess) {
+
+            $payload = array(
+                'timestamp' => $date,
+                'login' => $login,
+                'action' => 'delete',
+                'subject_id' => $itemId,
+                'remark' => "$login удалил $title №$itemId",
+                'past' => '',
+                'present' => var_export($arFields, true),
+            );
+            CIBlockElement::SetPropertyValuesEx($id,
+                $audit->getBlock(),
+                $payload);
+        }
+    }
+
+    /**
+     * @param int $ELEMENT_ID
+     * @param int $IBLOCK_ID
+     * @param array $PROPERTY_VALUES
+     * @param string $PROPERTY_CODE
+     * @param array $ar_prop
+     * @param array $arDBProps
+     */
+    public static function OnSetPropertyValues(
+        $ELEMENT_ID,
+        $IBLOCK_ID,
+        array &$PROPERTY_VALUES,
+        $PROPERTY_CODE,
+        array &$ar_prop,
+        array &$arDBProps
+    )
+    {
+        $element = static::getBlockAndSection($ELEMENT_ID);
+        list($isPermit, $isConstruct, $title) =
+            static::fullCheck((int)$element['IBLOCK_ID'],
+                (int)$element['IBLOCK_SECTION_ID'],
+                (new BitrixSection(7, 7)),
+                (new BitrixSection(8, 6)));
+
+        $isAcceptable = $isPermit || $isConstruct;
+        if ($isAcceptable) {
+            static::$before = $arDBProps;
+            static::$names = $ar_prop;
+        }
+
+    }
+
+    /**
+     * @param int $ELEMENT_ID
+     * @param int $IBLOCK_ID
+     * @param array $PROPERTY_VALUES
+     * @param string $PROPERTY_CODE
+     */
+    public static function afterSetPropertyValues(
+        $ELEMENT_ID,
+        $IBLOCK_ID,
+        array &$PROPERTY_VALUES,
+        $PROPERTY_CODE
+    )
+    {
+        $element = static::getBlockAndSection($ELEMENT_ID);
+        $permits = new BitrixSection(7, 7, 'Разрешние');
+        $constructs = new BitrixSection(8, 6, 'РК');
+
+        list($isPermit, $isConstruct, $title) =
+            static::fullCheck((int)$element['IBLOCK_ID'],
+                (int)$element['IBLOCK_SECTION_ID'],
+                $permits, $constructs);
+
+        $remark = '';
+        $isAcceptable = $isPermit || $isConstruct;
+        if ($isAcceptable) {
+            $was = new ArrayHandler(static::$before);
+            $after = new ArrayHandler($PROPERTY_VALUES);
+            foreach ($PROPERTY_VALUES as $key => $value) {
+
+                $isDiffer = false;
+                if ($after->has($key)) {
+                    $isDiffer = ($after->pull($key)->pull()->get('VALUE')->str()
+                            != $was->pull($key)->pull()->get('VALUE')->str())
+                        && !(empty($after->pull($key)->pull()->get('VALUE')->str())
+                            && empty($was->pull($key)->pull()->get('VALUE')->str()));
+                }
+                if ($isDiffer) {
+                    $name = static::$names[$key]['NAME'];
+                    $remark = $remark
+                        . "`$name` было "
+                        . "`{$was->pull($key)->pull()->get('VALUE')->asIs()}`"
+                        . " стало "
+                        . "`{$after->pull($key)->pull()->get('VALUE')->asIs()}`"
+                        . '; ';
+                }
+
             }
+        }
+        $action = 'не известная операция';
+        switch (static::$operation) {
+            case self::CHANGE:
+                $action = 'изменил';
+                break;
+            case self::REMOVE:
+                $action = 'удалил';
+                break;
+            case self::CREATE:
+                $action = 'добавил';
+                break;
+        }
 
-            $audit = new BitrixSection(9, 12, 'аудит');
-            $id = 0;
-            $date = '';
-            $login = '';
-            if ($isOk) {
-                /* @var $USER CUser */
-                global $USER;
-                $userId = $USER->GetID();
-                $login = $USER->GetLogin();
-                $date = ConvertTimeStamp(time(), 'FULL');
-                $record = array(
-                    'CREATED_BY' => $userId,
-                    'IBLOCK_ID' => $audit->getBlock(),
-                    'IBLOCK_SECTION_ID' => $audit->getSection(),
-                    'ACTIVE_FROM' => $date,
-                    'ACTIVE' => 'Y',
-                    'NAME' => "$login удалил $title №$itemId",
-                    'PREVIEW_TEXT' => '',
-                    'PREVIEW_TEXT_TYPE' => 'text',
-                    'WF_STATUS_ID' => 1,
-                    'IN_SECTIONS' => 'Y',
-                );
+        $itemId = 0;
+        $audit = new BitrixSection(9, 12, 'аудит');
+        $id = 0;
+        $date = '';
+        $login = '';
+        $has = !empty($remark);
+        if ($has) {
+            /* @var $USER CUser */
+            global $USER;
+            $userId = $USER->GetID();
+            $login = $USER->GetLogin();
+            $date = ConvertTimeStamp(time(), 'FULL');
+            $itemId = $ELEMENT_ID;
+            $record = array(
+                'CREATED_BY' => $userId,
+                'IBLOCK_ID' => $audit->getBlock(),
+                'IBLOCK_SECTION_ID' => $audit->getSection(),
+                'ACTIVE_FROM' => $date,
+                'ACTIVE' => 'Y',
+                'NAME' => "$login $action $title №$itemId",
+                'PREVIEW_TEXT' => $remark,
+                'PREVIEW_TEXT_TYPE' => 'text',
+                'WF_STATUS_ID' => 1,
+                'IN_SECTIONS' => 'Y',
+            );
 
-                $element = new CIBlockElement();
-                $id = $element->Add($record);
+            $element = new CIBlockElement();
+            $id = $element->Add($record);
+        }
+        $isSuccess = !empty($id);
+        if ($isSuccess) {
+            $payload = array(
+                'timestamp' => $date,
+                'login' => $login,
+                'action' => 'change',
+                'subject_id' => $itemId,
+                'remark' => $remark,
+                'past' => var_export(static::$before, true),
+                'present' => var_export($PROPERTY_VALUES, true),
+            );
+            CIBlockElement::SetPropertyValuesEx($id,
+                $audit->getBlock(),
+                $payload);
+        }
+    }
+
+
+    /**
+     * @param int $ELEMENT_ID
+     * @param int $IBLOCK_ID
+     * @param array $PROPERTY_VALUES
+     * @param array $propertyList
+     * @param array $arDBProps
+     */
+    public static function OnSetPropertyValuesEx(
+        $ELEMENT_ID,
+        $IBLOCK_ID,
+        array &$PROPERTY_VALUES,
+        array &$propertyList,
+        array &$arDBProps
+    )
+    {
+        $element = static::getBlockAndSection($ELEMENT_ID);
+        list($isPermit, $isConstruct) =
+            static::fullCheck((int)$element['IBLOCK_ID'],
+                (int)$element['IBLOCK_SECTION_ID'],
+                (new BitrixSection(7, 7)),
+                (new BitrixSection(8, 6)));
+
+        $isAcceptable = $isPermit || $isConstruct;
+        if ($isAcceptable) {
+            static::$before = $arDBProps;
+            static::$names = $propertyList;
+        }
+    }
+
+
+    /**
+     * @param int $ELEMENT_ID
+     * @param int $IBLOCK_ID
+     * @param array $PROPERTY_VALUES
+     * @param array $FLAGS
+     */
+    public static function afterSetPropertyValuesEx(
+        $ELEMENT_ID,
+        $IBLOCK_ID,
+        array &$PROPERTY_VALUES,
+        array &$FLAGS
+    )
+    {
+        $permits = new BitrixSection(7, 7, 'Разрешние');
+        $constructs = new BitrixSection(8, 6, 'РК');
+        $element = static::getBlockAndSection($ELEMENT_ID);
+
+        list($isPermit, $isConstruct, $title) =
+            static::fullCheck((int)$element['IBLOCK_ID'],
+                (int)$element['IBLOCK_SECTION_ID'],
+                $permits, $constructs);
+
+        $remark = '';
+        $isAcceptable = $isPermit || $isConstruct;
+        if ($isAcceptable) {
+            $was = new ArrayHandler(static::$before);
+            $after = new ArrayHandler($PROPERTY_VALUES);
+            foreach (static::$before as $key => $value) {
+
+                $code = static::$names[$key]['CODE'];
+                $isDiffer = false;
+                if ($was->has($key) && $after->has($code)) {
+                    $isDiffer = ($after->get($code)->str()
+                            != $was->pull($key)->pull()->get('VALUE')->str())
+                        && !(empty($after->get($code)->str())
+                            && empty($was->pull($key)->pull()->get('VALUE')->str()));
+                }
+                if ($isDiffer) {
+                    $name = static::$names[$key]['NAME'];
+                    $remark = $remark
+                        . "`$name` было "
+                        . "`{$was->pull($key)->pull()->get('VALUE')->asIs()}`"
+                        . " стало "
+                        . "`{$after->get($code)->asIs()}`"
+                        . '; ';
+                }
+
             }
-            $isSuccess = !empty($id);
-            if ($isSuccess) {
-
-                $payload = array(
-                    'timestamp' => $date,
-                    'login' => $login,
-                    'action' => 'delete',
-                    'subject_id' => $itemId,
-                    'remark' => "$login удалил $title №$itemId",
-                    'past' => '',
-                    'present' => var_export($arFields, true),
-                );
-                CIBlockElement::SetPropertyValuesEx($id,
-                    $audit->getBlock(),
-                    $payload);
-            }
+        }
+        $action = 'не известная операция';
+        switch (static::$operation) {
+            case self::CHANGE:
+                $action = 'изменил';
+                break;
+            case self::REMOVE:
+                $action = 'удалил';
+                break;
+            case self::CREATE:
+                $action = 'добавил';
+                break;
         }
 
+        $itemId = 0;
+        $audit = new BitrixSection(9, 12, 'аудит');
+        $id = 0;
+        $date = '';
+        $login = '';
+        $has = !empty($remark);
+        if ($has) {
+            /* @var $USER CUser */
+            global $USER;
+            $userId = $USER->GetID();
+            $login = $USER->GetLogin();
+            $date = ConvertTimeStamp(time(), 'FULL');
+            $itemId = $ELEMENT_ID;
+            $record = array(
+                'CREATED_BY' => $userId,
+                'IBLOCK_ID' => $audit->getBlock(),
+                'IBLOCK_SECTION_ID' => $audit->getSection(),
+                'ACTIVE_FROM' => $date,
+                'ACTIVE' => 'Y',
+                'NAME' => "$login $action $title №$itemId",
+                'PREVIEW_TEXT' => $remark,
+                'PREVIEW_TEXT_TYPE' => 'text',
+                'WF_STATUS_ID' => 1,
+                'IN_SECTIONS' => 'Y',
+            );
 
-    /*
-        public static  function OnSetPropertyValues(
-            int $ELEMENT_ID,
-            int $IBLOCK_ID,
-            array &$PROPERTY_VALUES,
-            string $PROPERTY_CODE,
-            array &$ar_prop,
-            array &$arDBProps
-        )
-        {
-            echo '10';
+            $element = new CIBlockElement();
+            $id = $element->Add($record);
         }
-
-
-        public static  function afterSetPropertyValues(
-            int $ELEMENT_ID,
-            int $IBLOCK_ID,
-            array &$PROPERTY_VALUES,
-            string $PROPERTY_CODE
-        )
-        {
-            echo '11';
+        $isSuccess = !empty($id);
+        if ($isSuccess) {
+            $payload = array(
+                'timestamp' => $date,
+                'login' => $login,
+                'action' => 'change',
+                'subject_id' => $itemId,
+                'remark' => $remark,
+                'past' => var_export(static::$before, true),
+                'present' => var_export($PROPERTY_VALUES, true),
+            );
+            CIBlockElement::SetPropertyValuesEx($id,
+                $audit->getBlock(),
+                $payload);
         }
+    }
 
-
-        public static  function OnSetPropertyValuesEx(
-            int $ELEMENT_ID,
-            int $IBLOCK_ID,
-            array &$PROPERTY_VALUES,
-            array &$propertyList,
-            array &$arDBProps
-        )
-        {
-            echo '12';
-        }
-
-
-        public static function afterSetPropertyValuesEx(
-            int $ELEMENT_ID,
-            int $IBLOCK_ID,
-            array &$PROPERTY_VALUES,
-            array &$FLAGS
-        )
-        {
-            echo '13';
-        }
-    */
 
     public static function afterUpdate(array &$arFields)
     {
-        static::$operation = self::CHANGE;
-
         $was = new ArrayHandler(static::$before);
         $itemId = 0;
         list($isAcceptable, $title) = static::isAllow($was);
@@ -287,8 +537,9 @@ class Logger
 
         $remark = '';
         if ($isOk) {
-            foreach (static::$before as $key => $value) {
-                $remark = self::writeDifference($key, $after, $was,
+            static::$operation = self::CHANGE;
+            foreach ($arFields as $key => $value) {
+                $remark = static::writeDifference($key, $after, $was,
                     $remark);
             }
         }
@@ -348,17 +599,14 @@ class Logger
     private static function writeDifference(
         $key, ArrayHandler $after, ArrayHandler $was, $remark)
     {
-        $has = $after->has($key);
-        if ($has) {
-            $has = $was->has($key);
-        }
-        if ($has) {
-            $has = ($after->get($key)->str()
+        $isDiffer = false;
+        if ($was->has($key) && $after->has($key)) {
+            $isDiffer = ($after->get($key)->str()
                     != $was->get($key)->str())
                 && !(empty($after->get($key)->asIs())
                     && empty($was->get($key)->asIs()));
         }
-        if ($has) {
+        if ($isDiffer) {
             $remark = $remark
                 . "`$key` было `{$was->get($key)->asIs()}`"
                 . " стало `{$after->get($key)->asIs()}`; ";
@@ -388,27 +636,23 @@ class Logger
         if ($isConstruct) {
             $title = $constructs->getTitle();
         }
-        return array($title, $isPermit, $isConstruct);
+        return array($isPermit, $isConstruct, $title);
     }
 
     /**
-     * @param $blockId
-     * @param BitrixSection $permits
-     * @param BitrixSection $constructs
+     * @param $id
      * @return array
      */
-    private static function shortCheck(
-        $blockId, BitrixSection $permits, BitrixSection $constructs)
+    private static function getBlockAndSection($id)
     {
-        $title = '';
-        $isPermit = $blockId === $permits->getBlock();
-        if ($isPermit) {
-            $title = $permits->getTitle();
+        $response = CIBlockElement::GetList(
+            array(), array('ID' => $id), false, false,
+            array('IBLOCK_ID', 'IBLOCK_SECTION_ID'));
+        $element = ['IBLOCK_ID' => 0, 'IBLOCK_SECTION_ID' => 0];
+        $isExists = $response !== false;
+        if ($isExists) {
+            $element = $response->Fetch();
         }
-        $isConstruct = $blockId === $constructs->getBlock();
-        if ($isConstruct) {
-            $title = $constructs->getTitle();
-        }
-        return array($title, $isPermit, $isConstruct);
+        return $element;
     }
 }

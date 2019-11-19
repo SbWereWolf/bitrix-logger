@@ -202,13 +202,24 @@ class Landmark
         if (!$isSuccess) {
             $fail = true;
             $DB->Rollback();
-            $output['message'] = 'Fail update construction';
+            $output['message'] = 'Fail update construction'
+                . var_export($id, true)
+                . var_export($fields, true);
         }
+        $payload = [];
+        $address = ValueHandler::asUndefined();
         if ($isSuccess) {
             $payload = array(
                 'longitude' => $this->parameters->get('x')->double(),
                 'latitude' => $this->parameters->get('y')->double(),
             );
+            $address = $this->parameters->get('address');
+        }
+        $location = $address->str();
+        if (!empty($location)) {
+            $payload['location'] = $location;
+        }
+        if ($isSuccess) {
             $constSec = new BitrixSection(8, 6);
 
             CIBlockElement::SetPropertyValuesEx($id,

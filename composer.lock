@@ -1,0 +1,62 @@
+{
+  "_readme": [
+    "This file locks the dependencies of your project to a known state",
+    "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+    "This file is @generated automatically"
+  ],
+  "content-hash": "ad40fe5e593a2094f2240484f2c2759a",
+  "packages": [
+    {
+      "name": "sbwerewolf/language-specific",
+      "version": "5.6.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/SbWereWolf/language-specific.git",
+        "reference": "0147092181b25781e693cbaba26f90f35eeaf4dc"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/SbWereWolf/language-specific/zipball/0147092181b25781e693cbaba26f90f35eeaf4dc",
+        "reference": "0147092181b25781e693cbaba26f90f35eeaf4dc",
+        "shasum": ""
+      },
+      "require": {
+        "php": "~5 || ~7"
+      },
+      "require-dev": {
+        "friendsofphp/php-cs-fixer": "2.15.3",
+        "phpunit/phpunit": "5.5.4"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Nikolay Volkhin",
+          "email": "ulfnew@gmail.com"
+        }
+      ],
+      "description": "Library for using PHP specific features",
+      "time": "2019-11-16T11:42:20+00:00"
+    }
+  ],
+  "packages-dev": [],
+  "aliases": [],
+  "minimum-stability": "stable",
+  "stability-flags": [],
+  "prefer-stable": false,
+  "prefer-lowest": false,
+  "platform": {
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-mysqli": "*"
+  },
+  "platform-dev": []
+}
