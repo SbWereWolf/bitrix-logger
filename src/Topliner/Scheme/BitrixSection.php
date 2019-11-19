@@ -30,7 +30,7 @@ class BitrixSection
     /**
      * @return int
      */
-    public function getBlock(): int
+    public function getBlock()
     {
         return $this->block;
     }
@@ -38,7 +38,7 @@ class BitrixSection
     /**
      * @return int
      */
-    public function getSection(): int
+    public function getSection()
     {
         return $this->section;
     }
@@ -46,7 +46,7 @@ class BitrixSection
     /**
      * @return string
      */
-    public function getTitle(): string
+    public function getTitle()
     {
         return $this->item;
     }

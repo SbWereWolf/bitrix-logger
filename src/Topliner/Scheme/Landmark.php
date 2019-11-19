@@ -12,6 +12,7 @@ use CModule;
 use CUser;
 use Exception;
 use LanguageSpecific\ArrayHandler;
+use LanguageSpecific\ValueHandler;
 use mysqli;
 
 class Landmark
@@ -35,7 +36,7 @@ class Landmark
         $call = $this->parameters->get('call')->str();
         switch ($call) {
             case'new':
-                $output = $this->new();
+                $output = $this->addNew();
                 break;
             case'store':
                 $output = $this->store();
@@ -48,7 +49,7 @@ class Landmark
         return $output;
     }
 
-    public function new()
+    public function addNew()
     {
         $output = ['success' => false, 'message' => 'General error'];
         /* @var $USER CUser */
@@ -113,14 +114,22 @@ class Landmark
             $output['message'] = "Fail add element : $details";
         }
         $payload = [];
+        $address = ValueHandler::asUndefined();
         if ($isSuccess) {
             $output['id'] = $id;
-
             $payload = array(
                 'type' => $type,
                 'longitude' => $this->parameters->get('x')->double(),
                 'latitude' => $this->parameters->get('y')->double(),
             );
+
+            $address = $this->parameters->get('address');
+        }
+        $location = $address->str();
+        if (!empty($location)) {
+            $payload['location'] = $location;
+        }
+        if ($isSuccess) {
             CIBlockElement::SetPropertyValuesEx($id,
                 $constSec->getBlock(),
                 $payload);
@@ -134,26 +143,28 @@ class Landmark
         }
 
         if ($isSuccess) {
+            $output['success'] = true;
             $DB->Commit();
             $isSuccess = $this->writePoints();
         }
         if ($isSuccess) {
-            $output = ['success' => true,
-                'message' => 'Success add new construct;'
-                    . ' Success update points;'];
+            $output['message'] = 'Success update points;';
         }
         if (!$isSuccess && !$fail) {
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
-            $output = ['success' => true,
-                'message' => 'Success add new construct;'
-                    . ' Fail update points;'];
+            $output['message'] = ' Fail update points, path is :'
+                . $this->parameters->get('DOCUMENT_ROOT')->str()
+                . '/scheme/js/points.js;';
         }
 
         return $output;
     }
 
-    private function writePoints(): bool
+    /**
+     * @return bool
+     */
+    private function writePoints()
     {
         $construct = new Construct();
         $points = $construct->get();
@@ -210,9 +221,11 @@ class Landmark
         if (!$isSuccess && !$fail) {
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
-            $output = ['success' => true,
+            $output['success'] = ['success' => true,
                 'message' => 'Success update construct;'
-                    . ' Fail update points;'];
+                    . ' Fail update points :'
+                    . $this->parameters->get('DOCUMENT_ROOT')->str()
+                    . '/scheme/js/points.js;'];
         }
         if ($isSuccess) {
             $output = ['success' => true,

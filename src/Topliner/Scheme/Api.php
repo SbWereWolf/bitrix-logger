@@ -43,8 +43,7 @@ class Api
             $output = (new Landmark($this->parameters))->process();
         }
 
-        $result = json_encode($output);
 
-        return $result;
+        return $output;
     }
 }

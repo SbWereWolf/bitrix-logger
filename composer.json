@@ -7,8 +7,7 @@
   "require": {
     "ext-pdo": "*",
     "ext-json": "*",
-    "sbwerewolf/language-specific": "^7.0",
-    "ext-mysqli": "*",
-    "carhartl/jquery-cookie": "*"
+    "sbwerewolf/language-specific": "^5.0",
+    "ext-mysqli": "*"
   }
 }

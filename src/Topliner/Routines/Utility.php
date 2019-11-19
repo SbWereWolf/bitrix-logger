@@ -9,7 +9,11 @@ use Exception;
 
 class Utility
 {
-    public static function toUnixTime($date): int
+    /**
+     * @param $date
+     * @return int
+     */
+    public static function toUnixTime($date)
     {
         $hasDot = strpos($date, '.') !== false;
         $format = 'm/d/Y H:i:s O';
