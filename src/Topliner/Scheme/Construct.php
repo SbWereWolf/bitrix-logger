@@ -48,7 +48,10 @@ class Construct
         }
     }
 
-    public function get(): array
+    /**
+     * @return array
+     */
+    public function get()
     {
         CModule::IncludeModule(self::IBLOCK);
 
@@ -190,7 +193,7 @@ class Construct
      * @return array
      */
     public static function getConstruction(ArrayHandler $source,
-                                           $constructions): array
+                                           $constructions)
     {
         $construction = $source
             ->pull('type')->get(self::VALUE)->str();
@@ -223,8 +226,7 @@ class Construct
      * @param DataManager $reference
      * @return string
      */
-    public static function getTitleFor(string $code,
-                                       $reference): string
+    public static function getTitleFor( $code, $reference)
     {
         /* @var $name Result */
         $name = null;

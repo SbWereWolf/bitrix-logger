@@ -22,7 +22,7 @@ class Api
     {
         $output = ['success' => false, 'message' => 'Call not found'];
 
-        $call = $this->parameters->get('call');
+        $call = $this->parameters->get('call')->str();
         $isValid = false;
         switch ($call) {
             case'new':
@@ -43,8 +43,7 @@ class Api
             $output = (new Landmark($this->parameters))->process();
         }
 
-        $result = json_encode($output);
 
-        return $result;
+        return $output;
     }
 }

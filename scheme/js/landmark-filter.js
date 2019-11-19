@@ -9,7 +9,7 @@ landmarkFilter = {
             if (isAddress) {
                 filter.address = subject.value;
             }
-            if (!isAddress) {
+            if (!isAddress && subject.name != 'sector-0' && subject.name != 'sector-1') {
                 filter.types.push(types[subject.name]);
             }
         });
@@ -21,6 +21,7 @@ landmarkFilter = {
         const conditions = landmarkFilter.define();
 
         myMap.geoObjects.removeAll();
+        //console.log(conditions);
         spreader.place(conditions);
 
         const address = conditions.address;

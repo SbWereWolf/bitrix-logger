@@ -28,8 +28,15 @@ class Placement
      */
     private $password;
 
-    public function __construct(string $type, string $host, string $base,
-                                string $login, string $password)
+    /**
+     * Placement constructor.
+     * @param string $type
+     * @param string $host
+     * @param string $base
+     * @param string $login
+     * @param string $password
+     */
+    public function __construct($type, $host, $base, $login, $password)
     {
         $this->type = $type;
         $this->host = $host;
