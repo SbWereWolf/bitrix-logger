@@ -154,7 +154,7 @@ class Landmark
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
             $output['message'] = ' Fail update points, path is :'
-                . $this->parameters->get('DOCUMENT_ROOT')->str()
+                .$this->parameters->get('DOCUMENT_ROOT')->str()
                 . '/scheme/js/points.js;';
         }
 

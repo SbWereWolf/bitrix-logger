@@ -226,7 +226,7 @@ class Construct
      * @param DataManager $reference
      * @return string
      */
-    public static function getTitleFor($code, $reference)
+    public static function getTitleFor( $code, $reference)
     {
         /* @var $name Result */
         $name = null;

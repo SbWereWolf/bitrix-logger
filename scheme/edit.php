@@ -5,272 +5,267 @@ global $BITRIX_SM_UIDL, $BITRIX_SM_UIDH;
 setcookie("api-login", $BITRIX_SM_UIDL);
 setcookie("api-hash", $BITRIX_SM_UIDH);
 ?>
-<body class="height100">
-<script type="text/javascript"
-        src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js">
-</script>
-<script type="text/javascript" src="/scheme/js/settings-edit.js">
-</script>
-<script type="text/javascript" src="/scheme/js/construct-options.js">
-</script>
-<script type="text/javascript" src="/scheme/js/landmark.js">
-</script>
-<script type="text/javascript" src="/scheme/js/points.js"></script>
-<div class="container-fluid">
-    <div class="row" style="background: darkorange;">
-        <div class="col-1 header-icon">
-            <img alt="logo" src="/scheme/assets/chelyabinsk-logo.png"
-                 height="89px" width="79px"/>
-        </div>
-        <div class="col-5 header-text">
-            <h6 style="padding-top: 3px;">
-                Управление наружной рекламы и информации<br>
-                Администрации города Челябинска
-            </h6>
-        </div>
-        <div class="col-6">
+<div class="all">
+    <div class="container-fluid header">
+        <div class="row d-flex bd-highlight mb-3" style="">
+            <div class="header-icon float-left">
+                <img alt="Управление наружной рекламы и информации Администрации города Челябинска" src="/scheme/assets/gerald.svg"
+                     height="67px" width="53px"/>
+            </div>
+            <div class="header-text float-left">
+                <h1 style="padding-top: 3px;">
+                    Управление наружной рекламы и информации<br>
+                    Администрации города Челябинска
+                </h1>
+            </div>
         </div>
     </div>
-</div>
-<div class="container-fluid height100">
-    <div class="row height80">
-        <div class="col-4">
+    <div class="container-fluid content">
+        <div class="col-3 align-self-stretch overflow-auto side-left ">
             <div class="tabs">
                 <div class="tab">
-                    <input type="radio" id="tab1" name="tab-group"
-                           checked>
-                    <label for="tab1" class="tab-title">Поиск
-                    </label>
+                    <ul class="nav nav-tabs" id="leftTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#searchtab" role="tab" aria-controls="searchtab" aria-selected="true">Поиск</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Подробности</a>
+                        </li>
+                        <li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="edit-tab" data-toggle="tab" href="#edit" role="tab" aria-controls="edit" aria-selected="false">Редактировать</a>
+                        </li>
+                    </ul>
                     <section class="tab-content">
-                        <form id="show">
-                            <div class="form-group">
-                                <label for="address">Адрес</label>
-                                <input type="search" id="address"
-                                       name="address"
-                                       class="form-control" autofocus
-                                       placeholder=
-                                       "Наименование или адрес объекта">
-                                <button type="submit" id="search"
-                                        style="margin-top: 10px;"
-                                        class="btn btn-primary">Найти
+                        <div class="tab-pane fade show active" id="searchtab" role="tabpanel">
+                            <form action="#" id="show">
+                                <div class="form-group row search-form">
+                                    <div class="col-9">
+                                        <input type="search" id="address"
+                                               name="address"
+                                               class="form-control" autofocus
+                                               placeholder=
+                                               "Наименование или адрес объекта">
+                                    </div>
+                                    <div class="col-3">
+                                        <button type="submit" id="searchBtn"
+                                                style=""
+                                                class="btn btn-primary clicktofind">Найти
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group row sectors-form">
+                                    <div class="col-2">
+                                        <label>Cектор:</label>
+                                    </div>
+                                    <div class="col-10 input-group mb-3" >
+                                        <select class="custom-select" name="sector-0" id="sector-0">
+                                        </select>
+                                        <select class="custom-select" name="sector-1" id="sector-1">
+                                        </select>
+                                        <input type="button" onclick="return false" id="goto-sector" value="Перейти" class="btn btn-warning" />
+                                    </div>
+                                    <div class="col-3">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row rk-type rk-type-1">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label class="col-9" for="type-1">щитовая установка арочного типа</label>
+                                    <div class="col-1"><input class="clicktofind"
+                                                              name="white-long-rectangle"
+                                                              type="checkbox" id="type-1"></div>
+
+
+                                </div>
+                                <div class="form-group  row rk-type rk-type-2">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">транспарант-перетяжка на
+                                        собственных опорах</label>
+                                    <div class="col-1"><input class="clicktofind"
+                                                              name="six-rectangle"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row rk-type rk-type-3">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">щитовая установка с площадью
+                                        информационного поля более 100 кв.м.</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="twice-rectangle"
+                                                              type="checkbox"></div>
+
+                                </div>
+                                <div class="form-group row rk-type rk-type-4">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">сити борд</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="white-rectangle"
+                                                              type="checkbox"></div>
+
+                                </div>
+                                <div class="form-group row  rk-type rk-type-5">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">щитовая установка</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="black-rectangle"
+                                                               type="checkbox"></div>
+
+                                </div>
+                                <div class="form-group row rk-type rk-type-6">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">экран</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="crocodile"
+                                                              type="checkbox"></div>
+
+                                </div>
+                                <div class="form-group row  rk-type rk-type-7">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">сити формат</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="white-cube"
+                                                              type="checkbox"></div>
+
+                                </div>
+                                <div class="form-group row  rk-type rk-type-8">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">панель-кронштейн</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="black-cube"
+                                                               type="checkbox"></div>
+                                </div>
+                                <div class="form-group  row rk-type rk-type-9">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">афишная тумба</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="white-circle"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-10">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">тумба</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="black-circle"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group  row rk-type rk-type-11">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">стела</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="white-circle-with-dot"
+                                                               type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-12">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">афишный стенд</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="white-triangle"
+                                                               type="checkbox"></div>
+                                </div>
+                                <div class="form-group  row rk-type rk-type-13">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">стенд</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="black-triangle"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-14">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">флаги</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="flag"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-15">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">скамья с рекламной информацией</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="star"
+                                                               type="checkbox"></div>
+                                </div>
+                                <div class="form-group  row rk-type rk-type-16">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">нестандартная рекламная конструкция</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="cross"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-17">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">световой короб</label>
+                                    <div class="col-1"><input class=" clicktofind"
+                                                              name="V"
+                                                              type="checkbox"></div>
+                                </div>
+                                <div class="form-group row  rk-type rk-type-18">
+                                    <div class="col-2"><div class="icon" ></div></div>
+                                    <label  class="col-9">указатель</label>
+                                    <div class="col-1"> <input class=" clicktofind"
+                                                               name="arrow"
+                                                               type="checkbox"> </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="profile" role="tabpanel">
+                        </div>
+                        <div class="tab-pane" id="edit" role="tabpanel">
+                            <div>
+                                <div class="form-group rk-edit-control" id="rk-type">
+                                    <label for="construct-types">
+                                        Вид рекламной конструкции
+                                    </label>
+                                    <select class="form-control"
+                                            id="construct-types">
+                                    </select>
+                                </div>
+                                <button id="add-new"
+                                        class="btn btn-primary rk-edit-control" >
+                                    Добавить
+                                </button>
+                                <div style="margin: 5px; display: none" class="rk-edit-control input-group mb-3" id="new-address-div">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            <input type="checkbox"  id="new-address-change" value="1" checked="" />
+                                        </div>
+                                    </div>
+                                     <input type="text" id="new-address" class="form-control" disabled="disabled" />
+                                </div>
+                                <button id="accept" disabled
+                                        class="btn btn-block btn-success rk-edit-control" style="display: none" id="rk-save">
+                                    Сохранить
+                                </button>
+                                <button id="decline" disabled
+                                        class="btn btn-block btn-danger rk-edit-control" style="display: none" id="rk-cancel">
+                                    Отменить
+                                </button>
+                                <button id="publish" disabled
+                                        class="btn  btn-warning rk-edit-control" id="publish">
+                                    Опубликовать
                                 </button>
                             </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-long-rectangle"
-                                           type="checkbox">
-                                    щитовая установка арочного типа
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="six-rectangle"
-                                           type="checkbox">
-                                    транспарант-перетяжка на
-                                    собственных опорах
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="twice-rectangle"
-                                           type="checkbox">
-                                    щитовая установка с площадью
-                                    информационного поля более 100 кв.м.
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-rectangle"
-                                           type="checkbox">
-                                    сити борд
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="black-rectangle"
-                                           type="checkbox">
-                                    щитовая установка
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="crocodile"
-                                           type="checkbox">
-                                    экран
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-cube"
-                                           type="checkbox">
-                                    сити формат
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="black-cube"
-                                           type="checkbox">
-                                    панель-кронштейн
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-circle"
-                                           type="checkbox">
-                                    афишная тумба
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="black-circle"
-                                           type="checkbox">
-                                    тумба
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-circle-with-dot"
-                                           type="checkbox">
-                                    стела
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="white-triangle"
-                                           type="checkbox">
-                                    афишный стенд
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="black-triangle"
-                                           type="checkbox">
-                                    стенд
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="flag"
-                                           type="checkbox">
-                                    флаги
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="star"
-                                           type="checkbox">
-                                    скамья с рекламной информацией
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="cross"
-                                           type="checkbox">
-                                    нестандартная рекламная конструкция
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="V"
-                                           type="checkbox">
-                                    световой короб
-                                </label>
-                            </div>
-                            <div class="form-group form-check">
-                                <label class="form-check-label">
-                                    <input class="form-check-input"
-                                           name="arrow"
-                                           type="checkbox">
-                                    указатель
-                                </label>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-                <div class="tab">
-                    <input type="radio" id="tab2" name="tab-group">
-                    <label for="tab2" class="tab-title">Найдено
-                    </label>
-                    <section class="tab-content">
-                        <div>
-                            Здесь будут перечислены результаты поиска
-                        </div>
-                    </section>
-                </div>
-                <div class="tab">
-                    <input type="radio" id="tab-for-details"
-                           name="tab-group">
-                    <label for="tab-for-details" class="tab-title">
-                        Подробно
-                    </label>
-                    <section class="tab-content">
-                        <div id="detail">
-                        </div>
-                    </section>
-                </div>
-                <div class="tab">
-                    <input type="radio" id="tab-for-commands"
-                           name="tab-group">
-                    <label for="tab-for-commands" class="tab-title">
-                        Редактирование
-                    </label>
-                    <section class="tab-content">
-                        <div>
-                            <div class="form-group">
-                                <label for="construct-types">
-                                    Вид рекламной конструкции
-                                </label>
-                                <select class="form-control"
-                                        id="construct-types">
-                                </select>
-                            </div>
-                            <button id="add-new"
-                                    class="btn btn-block btn-primary">
-                                Добавить
-                            </button>
-                            <button id="move" disabled
-                                    class="btn btn-block btn-primary">
-                                Переместить
-                            </button>
-                            <button id="accept" disabled
-                                    class="btn btn-block btn-success">
-                                Сохранить
-                            </button>
-                            <button id="decline" disabled
-                                    class="btn btn-block btn-danger">
-                                Отменить
-                            </button>
-                            <button id="publish" disabled
-                                    class="btn btn-block btn-primary">
-                                Опубликовать
-                            </button>
                         </div>
                     </section>
                 </div>
             </div>
         </div>
-        <div id="map" class="col-8 padding5">
+        <div id="map" class="col-9  align-self-stretch">
         </div>
     </div>
 </div>
-</body>
+<div class="modal fade" id="panoramaModal" tabindex="-1" role="dialog" aria-labelledby="panoramaModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-body" id="panoramaBody">
+                <div id="rkPanorama" style="height: 400px">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/footer.php");
 ?>
