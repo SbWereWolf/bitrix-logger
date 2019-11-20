@@ -10,26 +10,29 @@ use LanguageSpecific\ArrayHandler;
 
 class Logger
 {
+    const UNDEFINED = 'undefined';
     const CHANGE = 'change';
     const REMOVE = 'remove';
     const CREATE = 'create';
+
+    const NO_VALUE = [];
     /**
      * @var array
      */
-    private static $fields = [];
+    private static $fields = self::NO_VALUE;
     /**
      * @var array
      */
-    private static $properties = [];
+    private static $properties = self::NO_VALUE;
     /**
      * @var array
      */
-    private static $names = [];
+    private static $names = self::NO_VALUE;
 
     /**
      * @var string
      */
-    private static $operation = '';
+    private static $operation = self::UNDEFINED;
 
     public function OnAdd(array &$arFields)
     {
@@ -97,7 +100,7 @@ class Logger
             $payload = array(
                 'timestamp' => $date,
                 'login' => $login,
-                'action' => 'create',
+                'action' => self::CREATE,
                 'subject_id' => $itemId,
                 'remark' => "$login добавил $title №$itemId",
                 'past' => '',
@@ -127,12 +130,16 @@ class Logger
     )
     {
         $element = static::getBlockAndSection($ELEMENT_ID);
-        list($isPermit, $isConstruct) =
+        $permissible = [
+            new BitrixSection(7, 7, 'Разрешние'),
+            new BitrixSection(8, 6, 'РК'),
+            new BitrixSection(7, 8, 'Пуб. Разрешние'),
+            new BitrixSection(8, 9, 'Пуб. РК'),
+        ];
+        list($isAcceptable) =
             static::shortCheck((int)$element['IBLOCK_ID'],
-                (new BitrixSection(7, 7)),
-                (new BitrixSection(8, 6)));
+                $permissible);
 
-        $isAcceptable = $isPermit || $isConstruct;
         if ($isAcceptable) {
             static::$properties = $arDBProps;
             static::$names = $ar_prop;
@@ -154,15 +161,18 @@ class Logger
     )
     {
         $element = static::getBlockAndSection($ELEMENT_ID);
-        $permits = new BitrixSection(7, 7, 'Разрешние');
-        $constructs = new BitrixSection(8, 6, 'РК');
 
-        list($isPermit, $isConstruct, $title) =
-            static::shortCheck((int)$element['IBLOCK_ID'],
-                $permits, $constructs);
+        $permissible = [
+            new BitrixSection(7, 7, 'Разрешние'),
+            new BitrixSection(8, 6, 'РК'),
+            new BitrixSection(7, 8, 'Пуб. Разрешние'),
+            new BitrixSection(8, 9, 'Пуб. РК'),
+        ];
+        list($isAcceptable, $title) =
+            static::shortCheck((int)$element['IBLOCK_ID']
+                , $permissible);
 
         $remark = '';
-        $isAcceptable = $isPermit || $isConstruct;
         if ($isAcceptable) {
             $was = new ArrayHandler(static::$properties);
             $after = new ArrayHandler($PROPERTY_VALUES);
@@ -219,7 +229,7 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login $action $title №$itemId",
+                'NAME' => "$login $action свойства для $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -234,7 +244,7 @@ class Logger
             $payload = array(
                 'timestamp' => $date,
                 'login' => $login,
-                'action' => 'change',
+                'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
                 'past' => var_export(static::$fields, true),
@@ -243,6 +253,10 @@ class Logger
             CIBlockElement::SetPropertyValuesEx($id,
                 $audit->getBlock(),
                 $payload);
+        }
+        if ($isAcceptable) {
+            static::$properties = self::NO_VALUE;
+            static::$names = self::NO_VALUE;
         }
     }
 
@@ -262,13 +276,10 @@ class Logger
     )
     {
         $element = static::getBlockAndSection($ELEMENT_ID);
-        list($isPermit, $isConstruct) =
+        list($isAcceptable) =
             static::fullCheck((int)$element['IBLOCK_ID'],
-                (int)$element['IBLOCK_SECTION_ID'],
-                (new BitrixSection(7, 7)),
-                (new BitrixSection(8, 6)));
+                (int)$element['IBLOCK_SECTION_ID']);
 
-        $isAcceptable = $isPermit || $isConstruct;
         if ($isAcceptable) {
             static::$properties = $arDBProps;
             static::$names = $propertyList;
@@ -288,17 +299,13 @@ class Logger
         array &$FLAGS
     )
     {
-        $permits = new BitrixSection(7, 7, 'Разрешние');
-        $constructs = new BitrixSection(8, 6, 'РК');
         $element = static::getBlockAndSection($ELEMENT_ID);
 
-        list($isPermit, $isConstruct, $title) =
+        list($isAcceptable, $title) =
             static::fullCheck((int)$element['IBLOCK_ID'],
-                (int)$element['IBLOCK_SECTION_ID'],
-                $permits, $constructs);
+                (int)$element['IBLOCK_SECTION_ID']);
 
         $remark = '';
-        $isAcceptable = $isPermit || $isConstruct;
         if ($isAcceptable) {
             $was = new ArrayHandler(static::$properties);
             $after = new ArrayHandler($PROPERTY_VALUES);
@@ -356,7 +363,7 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login $action $title №$itemId",
+                'NAME' => "$login $action свойства для $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -371,7 +378,7 @@ class Logger
             $payload = array(
                 'timestamp' => $date,
                 'login' => $login,
-                'action' => 'change',
+                'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
                 'past' => var_export(static::$fields, true),
@@ -380,6 +387,10 @@ class Logger
             CIBlockElement::SetPropertyValuesEx($id,
                 $audit->getBlock(),
                 $payload);
+        }
+        if ($isAcceptable) {
+            static::$properties = self::NO_VALUE;
+            static::$names = self::NO_VALUE;
         }
     }
 
@@ -466,7 +477,7 @@ class Logger
             $payload = array(
                 'timestamp' => $date,
                 'login' => $login,
-                'action' => 'change',
+                'action' => static::CHANGE,
                 'subject_id' => $itemId,
                 'remark' => $remark,
                 'past' => var_export(static::$fields, true),
@@ -475,6 +486,9 @@ class Logger
             CIBlockElement::SetPropertyValuesEx($id,
                 $audit->getBlock(),
                 $payload);
+        }
+        if ($isAcceptable) {
+            static::$fields = self::NO_VALUE;
         }
     }
 
@@ -490,19 +504,14 @@ class Logger
     public static function beforeDelete($id)
     {
         $element = static::getBlockAndSection($id);
-        list($isPermit, $isConstruct) =
+        list($isAcceptable) =
             static::fullCheck((int)$element['IBLOCK_ID'],
-                (int)$element['IBLOCK_SECTION_ID'],
-                (new BitrixSection(7, 7)),
-                (new BitrixSection(8, 6)));
+                (int)$element['IBLOCK_SECTION_ID']);
 
-        $isAcceptable = $isPermit || $isConstruct;
         if ($isAcceptable) {
             static::$fields = $element;
             static::$operation = self::REMOVE;
         }
-
-
     }
 
     public static function afterDelete(array &$arFields)
@@ -553,7 +562,7 @@ class Logger
             $payload = array(
                 'timestamp' => $date,
                 'login' => $login,
-                'action' => 'remove',
+                'action' => self::REMOVE,
                 'subject_id' => $itemId,
                 'remark' => "$login удалил $title №$itemId",
                 'past' => '',
@@ -562,6 +571,9 @@ class Logger
             CIBlockElement::SetPropertyValuesEx($id,
                 $audit->getBlock(),
                 $payload);
+        }
+        if ($isAcceptable) {
+            static::$fields = self::NO_VALUE;
         }
     }
 
@@ -613,9 +625,6 @@ class Logger
      */
     private static function isAllow(ArrayHandler $fields)
     {
-        $permits = new BitrixSection(7, 7, 'Разрешние');
-        $constructs = new BitrixSection(8, 6, 'РК');
-
         $blockId = $fields->get('IBLOCK_ID')->int();
         $sectionId = $fields->pull('IBLOCK_SECTION')->isUndefined();
         if ($sectionId) {
@@ -625,57 +634,63 @@ class Logger
             $sectionId = $fields->pull('IBLOCK_SECTION')
                 ->get()->int();
         }
-        list($isPermit, $isConstruct, $title) =
-            static::fullCheck($blockId, $sectionId,
-                $permits, $constructs);
+        list($isAcceptable, $title) =
+            static::fullCheck($blockId, $sectionId);
 
-        $isAcceptable = $isPermit || $isConstruct;
         return array($isAcceptable, $title);
     }
 
     /**
      * @param $blockId
      * @param $sectionId
-     * @param BitrixSection $permits
-     * @param BitrixSection $constructs
      * @return array
      */
     private static function fullCheck(
-        $blockId, $sectionId, BitrixSection $permits,
-        BitrixSection $constructs)
+        $blockId, $sectionId)
     {
-        $title = '';
-        $isPermit = ($blockId === $permits->getBlock()
-            && $sectionId === $permits->getSection());
-        if ($isPermit) {
-            $title = $permits->getTitle();
+        $permissible = [
+            new BitrixSection(7, 7, 'Разрешние'),
+            new BitrixSection(8, 6, 'РК'),
+            new BitrixSection(7, 8, 'Пуб. Разрешние'),
+            new BitrixSection(8, 9, 'Пуб. РК'),
+        ];
+
+        list($isAccessible, $title) =
+            static::shortCheck($blockId, $permissible);
+
+        if ($isAccessible) {
+            $isAccessible = false;
+            foreach ($permissible as $item) {
+                /* @var $item BitrixSection */
+                $isAccessible = $sectionId === $item->getSection();
+                if ($isAccessible) {
+                    $title = $item->getTitle();
+                    break;
+                }
+            }
         }
-        $isConstruct = ($blockId === $constructs->getBlock()
-            && $sectionId === $constructs->getSection());
-        if ($isConstruct) {
-            $title = $constructs->getTitle();
-        }
-        return array($isPermit, $isConstruct, $title);
+
+        return array($isAccessible, $title);
     }
 
     /**
-     * @param $blockId
-     * @param BitrixSection $permits
-     * @param BitrixSection $constructs
+     * @param int $blockId
+     * @param array $accessible
      * @return array
      */
     private static function shortCheck(
-        $blockId, BitrixSection $permits, BitrixSection $constructs)
+        $blockId, array $accessible)
     {
+        $isAccessible = false;
         $title = '';
-        $isPermit = $blockId === $permits->getBlock();
-        if ($isPermit) {
-            $title = $permits->getTitle();
+        foreach ($accessible as $item) {
+            /* @var $item BitrixSection */
+            $isAccessible = $blockId === $item->getBlock();
+            if ($isAccessible) {
+                $title = $item->getTitle();
+                break;
+            }
         }
-        $isConstruct = $blockId === $constructs->getBlock();
-        if ($isConstruct) {
-            $title = $constructs->getTitle();
-        }
-        return array($isPermit, $isConstruct, $title);
+        return array($isAccessible, $title);
     }
 }

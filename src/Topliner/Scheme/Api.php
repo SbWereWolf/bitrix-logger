@@ -24,25 +24,31 @@ class Api
 
         $call = $this->parameters->get('call')->str();
         $isValid = false;
+        $isFound = false;
         switch ($call) {
             case'new':
+                $isFound = true;
                 $isValid = $this->parameters->has('x')
                     && $this->parameters->has('y')
                     && $this->parameters->has('type');
                 break;
             case'store':
+                $isFound = true;
                 $isValid = $this->parameters->has('x')
                     && $this->parameters->has('y')
                     && $this->parameters->has('number');
                 break;
             case'publish':
+                $isFound = true;
                 $isValid = $this->parameters->has('number');
                 break;
         }
         if ($isValid) {
             $output = (new Landmark($this->parameters))->process();
         }
-
+        if (!$isValid && $isFound) {
+            $output['message'] = 'Parameters of call is not valid';
+        }
 
         return $output;
     }

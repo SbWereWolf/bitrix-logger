@@ -68,7 +68,7 @@ const landmark = {
                     }
                 }
             );
-        })
+        });
         $('#edit-tab').tab('show');
         $('.rk-edit-control').hide();
         $('#new-address-div').show();
@@ -88,7 +88,7 @@ const landmark = {
                 $('#publish').show();
                 landmarkFilter.run();
             }
-        })
+        });
         myMap.setZoom(landmark.zoom);
     },
     move: "move",
@@ -183,7 +183,7 @@ const landmark = {
     publish:  function () {
         let data = landmark.getCredentials();
         data.call = 'publish';
-        data.number = placement.current.properties.get("info").number;
+        data.number = placement.current.properties.get("info").place_number;
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);

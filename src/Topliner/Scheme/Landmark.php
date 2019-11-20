@@ -17,6 +17,9 @@ use mysqli;
 
 class Landmark
 {
+    const SECTION_ID = 'SECTION_ID';
+    const PUBLISHED_CONSTRUCTS = 9;
+    const PUBLISHED_PERMITS = 8;
     /**
      * @var ArrayHandler
      */
@@ -25,6 +28,50 @@ class Landmark
     public function __construct(ArrayHandler $parameters)
     {
         $this->parameters = $parameters;
+    }
+
+    /**
+     * @param array $element
+     * @param $sectionId
+     * @return int
+     */
+    private static function copyElement(array $element, $sectionId)
+    {
+        /* @var $USER CUser */
+        global $USER;
+
+        $source = $element;
+        $userId = (int)$USER->GetID();
+        $date = ConvertTimeStamp(time(), 'FULL');
+
+        $element['CREATED_BY'] = $userId;
+        $element['IBLOCK_SECTION_ID'] = $sectionId;
+        $element['ACTIVE_FROM'] = $date;
+        $element['IN_SECTIONS'] = 'Y';
+        $copy = (int)(new CIBlockElement())->Add($element);
+        $values = [];
+        if (!empty($copy)) {
+            $filter = ['ID' => $source['ID'],
+                self::SECTION_ID => $source['IBLOCK_SECTION_ID']];
+            CIBlockElement::GetPropertyValuesArray($values,
+                $source['IBLOCK_ID'], $filter, [],
+                ['GET_RAW_DATA' => 'Y']);
+        }
+        $properties = [];
+        if (!empty($values)) {
+            $values = current($values);
+            foreach ($values as $key => $value) {
+                if (!empty($value['VALUE'])) {
+                    $properties[$key] = $value['VALUE'];
+                }
+            }
+        }
+        if (!empty($properties)) {
+            CIBlockElement::SetPropertyValuesEx($copy,
+                $element['IBLOCK_ID'],
+                $properties);
+        }
+        return $copy;
     }
 
     public function process()
@@ -146,7 +193,7 @@ class Landmark
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
             $output['message'] = ' Fail update points, path is :'
-                .$this->parameters->get('DOCUMENT_ROOT')->str()
+                . $this->parameters->get('DOCUMENT_ROOT')->str()
                 . '/scheme/js/points.js;';
         }
 
@@ -242,6 +289,105 @@ class Landmark
     public function publish()
     {
         $output = ['success' => false, 'message' => 'General error'];
+
+        $identity = $this->parameters->get('number')->int();
+        $response = CIBlockElement::GetByID($identity);
+
+        $construct = [];
+        $isReadSuccess = !empty($response) && $response->result !== false;
+        if (!$isReadSuccess) {
+            $output['message'] = 'Fail read construction';
+        }
+        if ($isReadSuccess) {
+            $construct = $response->Fetch();
+        }
+        $mayCopy = !empty($construct);
+        $source = [];
+        $published = 0;
+        if ($mayCopy) {
+            /* @var $USER CUser */
+            global $USER;
+
+            $source = $construct;
+            $userId = (int)$USER->GetID();
+            $date = ConvertTimeStamp(time(), 'FULL');
+
+            $construct['CREATED_BY'] = $userId;
+            $construct['IBLOCK_SECTION_ID'] = self::PUBLISHED_CONSTRUCTS;
+            $construct['ACTIVE_FROM'] = $date;
+            $construct['IN_SECTIONS'] = 'Y';
+            $published = (new CIBlockElement())->Add($construct);
+        }
+        $hasCopy = !empty($published);
+        if ($mayCopy && !$hasCopy) {
+            $output['message'] = 'Fail copying of construction';
+        }
+        $values = [];
+        if ($hasCopy) {
+            $output['success'] = true;
+            $output['message'] = 'Success copying of construction';
+            $output['published'] = $published;
+
+            $filter = ['ID' => $source['ID'],
+                self::SECTION_ID => $source['IBLOCK_SECTION_ID']];
+            CIBlockElement::GetPropertyValuesArray($values,
+                $source['IBLOCK_ID'], $filter, [],
+                ['GET_RAW_DATA' => 'Y']);
+        }
+        $gotValues = !empty($values);
+        if ($hasCopy && !$gotValues) {
+            $output['message'] = "{$output['message']};"
+                . ' Fail read construction properties';
+        }
+        $properties = [];
+        if ($gotValues) {
+            $values = current($values);
+            foreach ($values as $key => $value) {
+                if (!empty($value['VALUE'])) {
+                    $properties[$key] = $value['VALUE'];
+                }
+            }
+        }
+        $answer = null;
+        $hasPermit = !empty($properties)
+            && !empty($properties['permit_of_ad']);
+        if ($hasPermit) {
+            $permitId = (int)$properties['permit_of_ad'];
+            $answer = CIBlockElement::GetByID($permitId);
+        }
+        $hasAnswer = !empty($answer) && $answer->result !== false;
+        if ($hasPermit && !$hasAnswer) {
+            $output['message'] = "{$output['message']};"
+                . 'Fail read permit';
+        }
+        $permit = [];
+        if ($hasAnswer) {
+            $permit = $answer->Fetch();
+        }
+        $publishedPermit = 0;
+        $gotPermit = !empty($permit) && $permit !== false;
+        if ($gotPermit) {
+            $publishedPermit = static::copyElement($permit,
+                self::PUBLISHED_PERMITS);
+        }
+        if ($gotPermit && empty($publishedPermit)) {
+            $output['success'] = false;
+            $output['message'] = "{$output['message']};"
+                . 'Fail copying of permit';
+        }
+        if ($gotPermit && !empty($publishedPermit)) {
+            $output['message'] = "{$output['message']};" .
+                ' Success copying of permit';
+            $output['withPermit'] = $publishedPermit;
+        }
+        if ($gotPermit && !empty($publishedPermit)) {
+            $properties['permit_of_ad'] = $publishedPermit;
+        }
+        if (!empty($properties)) {
+            CIBlockElement::SetPropertyValuesEx($published,
+                $construct['IBLOCK_ID'],
+                $properties);
+        }
 
         return $output;
     }
