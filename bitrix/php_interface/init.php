@@ -17,8 +17,8 @@ if (!defined('IBLOCK_MODULE')) {
     define('IBLOCK_MODULE', 'iblock');
 }
 
-/*AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementAdd',
-    Array(Logger::class, 'OnAdd'));*/
+AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementAdd',
+    Array(Logger::class, 'OnAdd'));
 AddEventHandler(IBLOCK_MODULE, 'OnAfterIBlockElementAdd',
     Array(Logger::class, 'afterAdd'));
 
@@ -31,8 +31,8 @@ AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementUpdate',
 AddEventHandler(IBLOCK_MODULE, 'OnAfterIBlockElementUpdate',
     Array(Logger::class, 'afterUpdate'));
 
-AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementDelete',
-    Array(Logger::class, 'OnDelete'));
+/*AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementDelete',
+    Array(Logger::class, 'OnDelete'));*/
 AddEventHandler(IBLOCK_MODULE, 'OnBeforeIBlockElementDelete',
     Array(Logger::class, 'beforeDelete'));
 AddEventHandler(IBLOCK_MODULE, 'OnAfterIBlockElementDelete',

@@ -67,7 +67,6 @@ class Landmark
         /* @var $constructions DataManager */
         if (!$constructions !== null) {
             $reference = [];
-            /** @noinspection PhpUndefinedMethodInspection */
             try {
                 $reference = $constructions::getList(array(
                     'select' => array('UF_NAME', 'UF_XML_ID'),
@@ -133,13 +132,6 @@ class Landmark
             CIBlockElement::SetPropertyValuesEx($id,
                 $constSec->getBlock(),
                 $payload);
-        }
-
-        if (!$isSuccess && !$fail) {
-            $fail = true;
-            $DB->Rollback();
-            $details = var_export($payload, true);
-            $output['message'] = "Fail extend element : $details";
         }
 
         if ($isSuccess) {
