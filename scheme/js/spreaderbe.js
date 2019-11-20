@@ -97,7 +97,10 @@ const spreader = {
             const panorama = spreader.compose(place.x, place.y);
 
             let footer = "";
-            place.name += "";
+            if(typeof place.name != "undefined") place.name += "";
+            else {
+                place.name = "";
+            }
             let name = place.name.split('(')[0];
             name = name.charAt(0).toUpperCase() + name.slice(1);
             let image = "";

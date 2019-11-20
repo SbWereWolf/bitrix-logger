@@ -36,7 +36,6 @@
     </script>
     <script type="text/javascript" src="/scheme/js/landmark.js">
     </script>
-    <script type="text/javascript" src="/scheme/js/points.js"></script>
     <script type="text/javascript" src="/scheme/js/jquery.blockUI.js"></script>
     <script type="text/javascript" src="/scheme/js/on-load.js"></script>
     <meta name="viewport" content="width=1240">

@@ -22,6 +22,11 @@ class Landmark
      */
     private $parameters;
 
+    /**
+     * @var int
+     */
+    private $pointId = 0;
+
     public function __construct(ArrayHandler $parameters)
     {
         $this->parameters = $parameters;
@@ -103,7 +108,6 @@ class Landmark
 
         $element = new CIBlockElement();
         $id = $element->Add($fields);
-
         $isSuccess = !empty($id);
         $fail = false;
         if (!$isSuccess && !$fail) {
@@ -116,6 +120,12 @@ class Landmark
         $address = ValueHandler::asUndefined();
         if ($isSuccess) {
             $output['id'] = $id;
+            $construct = new Construct();
+            $constructions = (new Reference('ConstructionTypes'))
+                ->get();
+            $output['name'] = $construct->getConstructionWithType($this->parameters->get('type')
+                ->int(), $constructions);
+            $this->pointId = $id;
             $payload = array(
                 'type' => $type,
                 'longitude' => $this->parameters->get('x')->double(),
@@ -158,17 +168,46 @@ class Landmark
      */
     private function writePoints()
     {
-        $construct = new Construct();
-        $points = $construct->get();
-        $json = json_encode($points);
-        $json = "var points = $json;";
-        $file = fopen($this->parameters->get('DOCUMENT_ROOT')->str()
-            . '/scheme/js/points.js', 'w');
+        $isSuccess = false;
+        if($_POST['data']) {
+            $data = json_decode($_POST['data'], 1);
+            if($data) {
+                $file = $this->parameters->get('DOCUMENT_ROOT')->str()
+                    . '/scheme/js/points.json';
+                $points = json_decode(file_get_contents($file), 1);
+                if($data['call'] == 'store' && intval($data['number'])) {
+                    if($points[$data['number']]) {
+                        if($data['x']) $points[$data['number']]['x'] = $data['x'];
+                        if($data['y']) $points[$data['number']]['y'] = $data['y'];
+                        if(trim($data['address'])) $points[$data['number']]['location'] = trim($data['address']);
+                    }
+                   // print_r($points[$data['number']]);
+                } else if($data['call'] == 'new' && $this->pointId && $data['type']) {
+                    $construct = new Construct();
+                    $constructions = (new Reference('ConstructionTypes'))
+                        ->get();
+                    $name = $construct->getConstructionWithType($data['type'], $constructions);
+                    $points[$this->pointId]['construct'] = $data['type'];
+                    if(!$points[$this->pointId]) $points[$this->pointId] = [];
+                    if($name) $points[$this->pointId]['name'] = $name;
+                    if($data['x']) $points[$this->pointId]['x'] = $data['x'];
+                    if($data['y']) $points[$this->pointId]['y'] = $data['y'];
+                    if(trim($data['address'])) $points[$this->pointId]['location'] = trim($data['address']);
+                }
+                if(!$points) {
+                    $construct = new Construct();
+                    $points = $construct->get();
+                }
+                $json = json_encode($points);
+                $file = fopen($this->parameters->get('DOCUMENT_ROOT')->str()
+                    . '/scheme/js/points.json', 'w');
 
-        $isSuccess = $file !== false;
-        if ($isSuccess) {
-            fwrite($file, $json);
-            fclose($file);
+                $isSuccess = $file !== false;
+                if ($isSuccess) {
+                    fwrite($file, $json);
+                    fclose($file);
+                }
+            }
         }
 
         return $isSuccess;
@@ -213,7 +252,6 @@ class Landmark
         }
         if ($isSuccess) {
             $constSec = new BitrixSection(8, 6);
-
             CIBlockElement::SetPropertyValuesEx($id,
                 $constSec->getBlock(),
                 $payload);
