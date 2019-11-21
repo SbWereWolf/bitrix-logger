@@ -647,7 +647,7 @@ class Landmark
         $isSuccess = $file !== false;
 
         if ($isSuccess) {
-            $isSuccess = fwrite($file, $json);
+            $isSuccess = fwrite($file, $json) !== false;
             fclose($file);
         }
 
@@ -665,7 +665,7 @@ class Landmark
         $isSuccess = $file !== false;
 
         if ($isSuccess) {
-            $isSuccess = fwrite($file, $json);
+            $isSuccess = fwrite($file, $json) !== false;
             fclose($file);
         }
 
