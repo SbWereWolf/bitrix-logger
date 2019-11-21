@@ -8,6 +8,7 @@ use Bitrix\Main\ObjectPropertyException;
 use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\ORM\Query\Result;
 use Bitrix\Main\SystemException;
+use CFile;
 use CIBlockElement;
 use CModule;
 use Exception;
@@ -37,14 +38,14 @@ class Construct
             $this->permits = $permits;
         }
         if (!$isPermit) {
-            $this->permits = new BitrixSection(7, 7);
+            $this->permits = BitrixScheme::getPermits();
         }
         $isConstruction = $constructions instanceof BitrixSection;
         if ($isConstruction) {
             $this->constructs = $constructions;
         }
         if (!$isConstruction) {
-            $this->constructs = new BitrixSection(8, 6);
+            $this->constructs = BitrixScheme::getConstructs();
         }
     }
 
@@ -113,7 +114,7 @@ class Construct
                 ->pull('images')->get(self::VALUE)->asIs();
             $data['images'] = [];
             foreach ($images as $image) {
-                $data['images'][] =  \CFile::GetPath($image);
+                $data['images'][] = CFile::GetPath($image);
             }
             $lightening = $source
                 ->pull('lightening')->get(self::VALUE)->str();

@@ -22,8 +22,8 @@ AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementAdd',
 AddEventHandler(IBLOCK_MODULE, 'OnAfterIBlockElementAdd',
     Array(Logger::class, 'afterAdd'));
 
-/*AddEventHandler(IBLOCK_MODULE, 'OnBeforeIBlockElementUpdate',
-    Array(Logger::class, 'beforeUpdate'));*/
+AddEventHandler(IBLOCK_MODULE, 'OnBeforeIBlockElementUpdate',
+    Array(Logger::class, 'beforeUpdate'));
 AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementUpdate',
     Array(Logger::class, 'OnUpdate'));
 /*AddEventHandler(IBLOCK_MODULE, 'OnStartIBlockElementUpdate',

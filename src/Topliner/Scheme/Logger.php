@@ -5,6 +5,7 @@ namespace Topliner\Scheme;
 
 
 use CIBlockElement;
+use CIBlockProperty;
 use CUser;
 use LanguageSpecific\ArrayHandler;
 
@@ -32,7 +33,7 @@ class Logger
     /**
      * @var string
      */
-    private static $operation = self::UNDEFINED;
+    public static $operation = self::UNDEFINED;
 
     public function OnAdd(array &$arFields)
     {
@@ -131,10 +132,10 @@ class Logger
     {
         $element = static::getBlockAndSection($ELEMENT_ID);
         $permissible = [
-            new BitrixSection(7, 7, 'Разрешние'),
-            new BitrixSection(8, 6, 'РК'),
-            new BitrixSection(7, 8, 'Пуб. Разрешние'),
-            new BitrixSection(8, 9, 'Пуб. РК'),
+            BitrixScheme::getConstructs(),
+            BitrixScheme::getPermits(),
+            BitrixScheme::getPublishedConstructs(),
+            BitrixScheme::getPublishedPermits()
         ];
         list($isAcceptable) =
             static::shortCheck((int)$element['IBLOCK_ID'],
@@ -163,10 +164,10 @@ class Logger
         $element = static::getBlockAndSection($ELEMENT_ID);
 
         $permissible = [
-            new BitrixSection(7, 7, 'Разрешние'),
-            new BitrixSection(8, 6, 'РК'),
-            new BitrixSection(7, 8, 'Пуб. Разрешние'),
-            new BitrixSection(8, 9, 'Пуб. РК'),
+            BitrixScheme::getConstructs(),
+            BitrixScheme::getPermits(),
+            BitrixScheme::getPublishedConstructs(),
+            BitrixScheme::getPublishedPermits()
         ];
         list($isAcceptable, $title) =
             static::shortCheck((int)$element['IBLOCK_ID']
@@ -394,11 +395,37 @@ class Logger
         }
     }
 
-    /*    public function beforeUpdate(array &$arParams)
-            {
-                echo '3';
-            }
-    */
+    public function beforeUpdate(array &$arParams)
+    {
+        $fields = new ArrayHandler($arParams);
+        list($isAcceptable) = static::isAllow($fields);
+        $response = false;
+        if ($isAcceptable) {
+            $filter = ['CODE' => BitrixScheme::PUBLISH_STATUS];
+            $response = CIBlockProperty::GetList([], $filter);
+        }
+        $fetched = false;
+        if (!empty($response)) {
+            $fetched = $response->Fetch();
+        }
+        $id = '';
+        if (!empty($fetched)) {
+            $id = $fetched['ID'];
+        }
+        $letChange = false;
+        $target = '';
+        if (!empty($id)) {
+            $target = key($arParams['PROPERTY_VALUES'][$id]);
+            $letChange =
+                $arParams['PROPERTY_VALUES'][$id][$target]['VALUE']
+                !== BitrixScheme::APPROVED;
+        }
+        if ($letChange) {
+            $arParams['PROPERTY_VALUES'][$id][$target]['VALUE'] =
+                BitrixScheme::DRAFT;
+        }
+    }
+
 
     /*    public function startUpdate(array &$arParams)
             {
@@ -626,11 +653,12 @@ class Logger
     private static function isAllow(ArrayHandler $fields)
     {
         $blockId = $fields->get('IBLOCK_ID')->int();
-        $sectionId = $fields->pull('IBLOCK_SECTION')->isUndefined();
-        if ($sectionId) {
+        $sectionId = 0;
+        $has = $fields->pull('IBLOCK_SECTION')->isUndefined();
+        if ($has) {
             $sectionId = $fields->get('IBLOCK_SECTION_ID')->int();
         }
-        if (!$sectionId) {
+        if (!$has) {
             $sectionId = $fields->pull('IBLOCK_SECTION')
                 ->get()->int();
         }
@@ -649,10 +677,10 @@ class Logger
         $blockId, $sectionId)
     {
         $permissible = [
-            new BitrixSection(7, 7, 'Разрешние'),
-            new BitrixSection(8, 6, 'РК'),
-            new BitrixSection(7, 8, 'Пуб. Разрешние'),
-            new BitrixSection(8, 9, 'Пуб. РК'),
+            BitrixScheme::getConstructs(),
+            BitrixScheme::getPermits(),
+            BitrixScheme::getPublishedConstructs(),
+            BitrixScheme::getPublishedPermits()
         ];
 
         list($isAccessible, $title) =

@@ -8,6 +8,7 @@ use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\ORM\Query\Result;
 use CDatabase;
 use CIBlockElement;
+use CIBlockResult;
 use CModule;
 use CUser;
 use Exception;
@@ -38,6 +39,27 @@ class Landmark
     public function __construct(ArrayHandler $parameters)
     {
         $this->parameters = $parameters;
+    }
+
+    /**
+     * @param $response
+     * @return bool
+     */
+    private static function isRequestSuccess($response)
+    {
+        $isResult = false;
+        if (!empty($response)) {
+            $isResult = $response instanceof CIBlockResult;
+        }
+        $status = false;
+        if ($isResult) {
+            $status = $response->result !== false;
+        }
+        if (!$isResult) {
+            $status = $response !== false;
+        }
+
+        return $status;
     }
 
     /**
@@ -75,11 +97,13 @@ class Landmark
                     $properties[$key] = $value['VALUE'];
                 }
             }
+            $properties[BitrixScheme::PUBLISH_STATUS]
+                = BitrixScheme::APPROVED;
         }
         if (!empty($properties)) {
             CIBlockElement::SetPropertyValuesEx($copy,
                 $element['IBLOCK_ID'],
-                $properties);
+                $properties, ['NewElement' => true]);
         }
         return $copy;
     }
@@ -198,23 +222,25 @@ class Landmark
             $payload['location'] = $location;
         }
         if ($isSuccess) {
+            $output['success'] = true;
+            $output['message'] = 'Success add new point;';
+
             CIBlockElement::SetPropertyValuesEx($id,
                 $constSec->getBlock(),
-                $payload);
-        }
-
-        if ($isSuccess) {
-            $output['success'] = true;
+                $payload, ['NewElement' => true]);
             $DB->Commit();
+
             $isSuccess = $this->writePoints();
         }
         if ($isSuccess) {
-            $output['message'] = 'Success update points;';
+            $output['message'] = $output['message']
+                . ' Success update points;';
         }
         if (!$isSuccess && !$fail) {
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
-            $output['message'] = ' Fail update points, path is :'
+            $output['message'] = $output['message']
+                . ' Fail update points, path is :'
                 . $this->getPathToPoints();
         }
 
@@ -332,8 +358,7 @@ class Landmark
         return $isSuccess;
     }
 
-    public
-    function store()
+    public function store()
     {
         $output = ['success' => false, 'message' => 'General error'];
         /* @var $USER CUser */
@@ -396,10 +421,14 @@ class Landmark
         return $output;
     }
 
-    public
-    function publish()
+    public function publish()
     {
         $output = ['success' => false, 'message' => 'General error'];
+        /* @var $DB CDatabase */
+        global $DB;
+
+        /** @var $dbConn mysqli */
+        $DB->StartTransaction();
 
         $identity = $this->parameters->get('number')->int();
         $response = CIBlockElement::GetByID($identity);
@@ -412,10 +441,72 @@ class Landmark
         if ($isReadSuccess) {
             $construct = $response->Fetch();
         }
-        $mayCopy = !empty($construct);
+        $isConstructFound = !empty($construct);
+        $isExistsChild = false;
+        if ($isConstructFound) {
+            Logger::$operation = Logger::CHANGE;
+            CIBlockElement::SetPropertyValuesEx(
+                $identity, $construct['IBLOCK_ID'],
+                [BitrixScheme::PUBLISH_STATUS
+                => BitrixScheme::APPROVED]);
+
+
+            $constructs = BitrixScheme::getPublishedConstructs();
+            $filter = ['IBLOCK_ID' => $constructs->getBlock(),
+                'SECTION_ID' => $constructs->getSection(),
+                'PROPERTY_original' => $identity,
+            ];
+            $select = ['ID', 'PROPERTY_permit_of_ad'];
+            $response = CIBlockElement::GetList([], $filter,
+                false, false, $select);
+            $isExistsChild = static::isRequestSuccess($response);
+        }
+        $child = false;
+        if ($isExistsChild) {
+            $child = $response->Fetch();
+        }
+        $gotChild = static::isFetchSuccess($child);
+        $childId = 0;
+        $childPermit = 0;
+        $gotPublicPermit = false;
+        if ($gotChild) {
+            $childId = $child['ID'];
+            $childPermit = $child['PROPERTY_PERMIT_OF_AD_VALUE'];
+            $gotPublicPermit = !empty($childPermit);
+        }
+        $isSuccessDelete = false;
+        if ($gotPublicPermit) {
+            $isSuccessDelete = CIBlockElement::Delete($childPermit);
+        }
+        $letAppend = false;
+        if ($gotPublicPermit && !$isSuccessDelete) {
+            $output['message'] = 'Fail delete published permit;';
+            $letAppend = true;
+        }
+        if ($gotPublicPermit && $isSuccessDelete) {
+            $output['message'] = 'Success delete published permit;';
+            $letAppend = true;
+        }
+        if ($gotChild) {
+            $isSuccessDelete = CIBlockElement::Delete($childId);
+        }
+        if ($gotChild && !$isSuccessDelete) {
+            $output['message'] = !$letAppend
+                ? 'Fail delete published permit;'
+                : $output['message']
+                . ' Fail delete published construction;';
+            $letAppend = true;
+        }
+        if ($gotChild && $isSuccessDelete) {
+            $output['message'] = !$letAppend
+                ? 'Success delete published permit;'
+                : $output['message']
+                . ' Success delete published construction;';
+            $letAppend = true;
+        }
         $source = [];
         $published = 0;
-        if ($mayCopy) {
+        if ($isConstructFound) {
             /* @var $USER CUser */
             global $USER;
 
@@ -430,13 +521,18 @@ class Landmark
             $published = (new CIBlockElement())->Add($construct);
         }
         $hasCopy = !empty($published);
-        if ($mayCopy && !$hasCopy) {
-            $output['message'] = 'Fail copying of construction';
+        if ($isConstructFound && !$hasCopy) {
+            $output['message'] = !$letAppend
+                ? 'Fail copying of construction;'
+                : $output['message'] . ' Fail copying of construction;';
+            $letAppend = true;
         }
         $values = [];
         if ($hasCopy) {
             $output['success'] = true;
-            $output['message'] = 'Success copying of construction';
+            $output['message'] = !$letAppend
+                ? 'Success copying of construction;'
+                : $output['message'] . ' Success copying of construction;';
             $output['published'] = $published;
 
             $filter = ['ID' => $source['ID'],
@@ -447,7 +543,7 @@ class Landmark
         }
         $gotValues = !empty($values);
         if ($hasCopy && !$gotValues) {
-            $output['message'] = "{$output['message']};"
+            $output['message'] = $output['message']
                 . ' Fail read construction properties';
         }
         $properties = [];
@@ -458,6 +554,9 @@ class Landmark
                     $properties[$key] = $value['VALUE'];
                 }
             }
+            $properties[BitrixScheme::PUBLISH_STATUS]
+                = BitrixScheme::APPROVED;
+            $properties['original'] = $identity;
         }
         $answer = null;
         $hasPermit = !empty($properties)
@@ -468,7 +567,7 @@ class Landmark
         }
         $hasAnswer = !empty($answer) && $answer->result !== false;
         if ($hasPermit && !$hasAnswer) {
-            $output['message'] = "{$output['message']};"
+            $output['message'] = $output['message']
                 . 'Fail read permit';
         }
         $permit = [];
@@ -483,11 +582,11 @@ class Landmark
         }
         if ($gotPermit && empty($publishedPermit)) {
             $output['success'] = false;
-            $output['message'] = "{$output['message']};"
+            $output['message'] = $output['message']
                 . 'Fail copying of permit';
         }
         if ($gotPermit && !empty($publishedPermit)) {
-            $output['message'] = "{$output['message']};" .
+            $output['message'] = $output['message'] .
                 ' Success copying of permit';
             $output['withPermit'] = $publishedPermit;
         }
@@ -497,20 +596,24 @@ class Landmark
         if (!empty($properties)) {
             CIBlockElement::SetPropertyValuesEx($published,
                 $construct['IBLOCK_ID'],
-                $properties);
+                $properties, ['NewElement' => true]);
         }
 
         $isSuccess = $output['success'];
+        if (!$isSuccess) {
+            $DB->Rollback();
+        }
         $writeSuccess = false;
         if ($isSuccess) {
+            $DB->Commit();
             $writeSuccess = $this->writePublished();
         }
         if ($isSuccess && !$writeSuccess) {
-            $output['message'] = "{$output['message']};" .
+            $output['message'] = $output['message'] .
                 ' Fail update published';
         }
         if ($isSuccess && $writeSuccess) {
-            $output['message'] = "{$output['message']};" .
+            $output['message'] = $output['message'] .
                 ' Success update published';
         }
 
@@ -567,5 +670,19 @@ class Landmark
         }
 
         return ['success' => $isSuccess];
+    }
+
+    /**
+     * @param array|false $fetched
+     * @return bool
+     */
+    private static function isFetchSuccess($fetched)
+    {
+        $status = is_array($fetched);
+        if (!$status) {
+            $status = $fetched !== false;
+        }
+
+        return $status;
     }
 }
