@@ -10,6 +10,7 @@ const settings = {
         $(landmark.acceptId).on("click", landmark.acceptAction);
         $(landmark.declineId).on("click", landmark.declineAction);
         $(landmark.publishId).on("click", landmark.publish);
+        $(landmark.flushId).on("click", landmark.flush);
 
         const options = selectWithTypes.get();
         $(landmark.constructTypesId).html(options);

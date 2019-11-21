@@ -239,8 +239,12 @@ setcookie("api-hash", $BITRIX_SM_UIDH);
                                     Отменить
                                 </button>
                                 <button id="publish" disabled
-                                        class="btn  btn-warning rk-edit-control" id="publish">
+                                        class="btn  btn-warning rk-edit-control" >
                                     Опубликовать
+                                </button>
+                                <button id="flush"
+                                        class="btn  btn-danger rk-edit-control" >
+                                    Обновить
                                 </button>
                             </div>
                         </div>
