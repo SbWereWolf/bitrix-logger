@@ -185,6 +185,8 @@ const landmark = {
         data.call = 'publish';
         data.number = placement.current.properties.get("info").place_number;
 
+        window.console.log(placement.current.properties.get('info'));
+
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);
         }, 'json');
