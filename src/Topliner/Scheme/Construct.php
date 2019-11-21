@@ -69,14 +69,15 @@ class Construct
             ->get();
         $ofLightenings = (new Reference('Lightening'))
             ->get();
+        //echo \CFile::GetPath(63);
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
-
             $data['title'] = $source
                 ->pull('title')->get(self::VALUE)->str();
 
             $properties = self::getConstruction($source, $constructions);
+
             if (!empty($properties)) {
                 $data['construct'] = $properties['id'];
                 $data['name'] = $properties['name'];
@@ -108,7 +109,12 @@ class Construct
                 ->pull('fields_number')->get(self::VALUE)->str();
             $data['fields_area'] = $source
                 ->pull('fields_area')->get(self::VALUE)->str();
-
+            $images = $source
+                ->pull('images')->get(self::VALUE)->asIs();
+            $data['images'] = [];
+            foreach ($images as $image) {
+                $data['images'][] =  \CFile::GetPath($image);
+            }
             $lightening = $source
                 ->pull('lightening')->get(self::VALUE)->str();
 

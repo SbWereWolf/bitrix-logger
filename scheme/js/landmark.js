@@ -101,6 +101,25 @@ const landmark = {
     moveId: "#move",
     publishId: "#publish",
     constructTypesId: "#construct-types",
+    flushId: "#flush",
+    flush: function () {
+        let data = landmark.getCredentials();
+        data.call = 'flush';
+        landmark.block();
+        $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
+            if(result.success) {
+                $.get('/scheme/js/points.json', function(data) {
+                    myMap.geoObjects.removeAll();
+                    points = data;
+                    spreader.place();
+                    landmark.unblock();
+                }, 'json');
+            } else {
+                alert('Произошла ошибка, попробуйте позднее...');
+                landmark.unblock();
+            }
+        }, 'json');
+    },
     start: function () {
         $(landmark.acceptId).prop("disabled", false);
         $(landmark.declineId).prop("disabled", false);
@@ -184,6 +203,8 @@ const landmark = {
         let data = landmark.getCredentials();
         data.call = 'publish';
         data.number = placement.current.properties.get("info").place_number;
+
+        window.console.log(placement.current.properties.get('info'));
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);
