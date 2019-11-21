@@ -20,6 +20,11 @@ class Landmark
     const SECTION_ID = 'SECTION_ID';
     const PUBLISHED_CONSTRUCTS = 9;
     const PUBLISHED_PERMITS = 8;
+    const STORE = 'store';
+    const ADD_NEW = 'new';
+    const PUBLISH = 'publish';
+    const FLUSH = 'flush';
+    const RESET = 'reset';
     /**
      * @var ArrayHandler
      */
@@ -87,14 +92,20 @@ class Landmark
 
         $call = $this->parameters->get('call')->str();
         switch ($call) {
-            case'new':
+            case  self::ADD_NEW:
                 $output = $this->addNew();
                 break;
-            case'store':
+            case self::STORE:
                 $output = $this->store();
                 break;
-            case'publish':
+            case self::PUBLISH:
                 $output = $this->publish();
+                break;
+            case self::FLUSH:
+                $output = $this->flush();
+                break;
+            case self::RESET:
+                $output = $this->reset();
                 break;
         }
 
@@ -167,12 +178,13 @@ class Landmark
         $address = ValueHandler::asUndefined();
         if ($isSuccess) {
             $output['id'] = $id;
-            $construct = new Construct();
+            $this->pointId = $output['id'];
             $constructions = (new Reference('ConstructionTypes'))
                 ->get();
-            $output['name'] = $construct->getConstructionWithType($this->parameters->get('type')
-                ->int(), $constructions);
-            $this->pointId = $id;
+            $output['name'] = (new Construct())
+                ->getConstructionWithType(
+                    $this->parameters->get('type')->str(),
+                    $constructions);
             $payload = array(
                 'type' => $type,
                 'longitude' => $this->parameters->get('x')->double(),
@@ -203,8 +215,7 @@ class Landmark
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
             $output['message'] = ' Fail update points, path is :'
-                . $this->parameters->get('DOCUMENT_ROOT')->str()
-                . '/scheme/js/points.js;';
+                . $this->getPathToPoints();
         }
 
         return $output;
@@ -213,54 +224,116 @@ class Landmark
     /**
      * @return bool
      */
-    private function writePoints()
+    private function writePublished()
     {
-        $isSuccess = false;
-        if($_POST['data']) {
-            $data = json_decode($_POST['data'], 1);
-            if($data) {
-                $file = $this->parameters->get('DOCUMENT_ROOT')->str()
-                    . '/scheme/js/points.json';
-                $points = json_decode(file_get_contents($file), 1);
-                if($data['call'] == 'store' && intval($data['number'])) {
-                    if($points[$data['number']]) {
-                        if($data['x']) $points[$data['number']]['x'] = $data['x'];
-                        if($data['y']) $points[$data['number']]['y'] = $data['y'];
-                        if(trim($data['address'])) $points[$data['number']]['location'] = trim($data['address']);
-                    }
-                   // print_r($points[$data['number']]);
-                } else if($data['call'] == 'new' && $this->pointId && $data['type']) {
-                    $construct = new Construct();
-                    $constructions = (new Reference('ConstructionTypes'))
-                        ->get();
-                    $name = $construct->getConstructionWithType($data['type'], $constructions);
-                    $points[$this->pointId]['construct'] = $data['type'];
-                    if(!$points[$this->pointId]) $points[$this->pointId] = [];
-                    if($name) $points[$this->pointId]['name'] = $name;
-                    if($data['x']) $points[$this->pointId]['x'] = $data['x'];
-                    if($data['y']) $points[$this->pointId]['y'] = $data['y'];
-                    if(trim($data['address'])) $points[$this->pointId]['location'] = trim($data['address']);
-                }
-                if(!$points) {
-                    $construct = new Construct();
-                    $points = $construct->get();
-                }
-                $json = json_encode($points);
-                $file = fopen($this->parameters->get('DOCUMENT_ROOT')->str()
-                    . '/scheme/js/points.json', 'w');
+        $input = $this->parameters;
+        $number = $input->get('number')->str();
 
-                $isSuccess = $file !== false;
-                if ($isSuccess) {
-                    fwrite($file, $json);
-                    fclose($file);
-                }
-            }
+        $point = [];
+        $filename = '';
+        $isValid = !empty($number);
+        if ($isValid) {
+            $filename = $this->getPathToPoints();
+            $points = json_decode(file_get_contents($filename), true);
+            $point = key_exists($number, $points)
+                ? $points[$number] : [];
+        }
+        $points = [];
+        $isExists = !empty($point);
+        if ($isExists) {
+            $filename = $this->getPathToPublished();
+            $points = json_decode(file_get_contents($filename), true);
+        }
+        if ($isExists && !is_array($points)) {
+            $points = [];
+        }
+        $file = false;
+        $json = '';
+        if ($isExists) {
+            $points[$number] = $point;
+            $json = json_encode($points);
+            $file = fopen($filename, 'w');
+        }
+        $isSuccess = $file !== false;
+        if ($isSuccess) {
+            $isSuccess = fwrite($file, $json) !== false;
+            fclose($file);
         }
 
         return $isSuccess;
     }
 
-    public function store()
+    /**
+     * @return bool
+     */
+    private function writePoints()
+    {
+        $input = $this->parameters;
+        $filename = $this->getPathToPoints();
+
+        $call = $input->get('call')->str();
+        $number = $input->get('number')->str();
+        $isStore = $call === self::STORE;
+        $isValid = !empty($number);
+
+        $point = [];
+        $points = [];
+        if ($isValid && $isStore) {
+            $points = json_decode(file_get_contents($filename), true);
+            $point = key_exists($number, $points)
+                ? $points[$number] : [];
+        }
+        $found = !empty($point) && $input->get('x')->has();
+        $address = $input->get('address')->str();
+        if ($found && trim($address)) {
+            $point['location'] = trim($address);
+        }
+        if ($found) {
+            $point['x'] = $input->get('x')->double();
+            $point['y'] = $input->get('y')->double();
+            $points[$number] = $point;
+        }
+        $isNew = $call === self::ADD_NEW;
+        if (!$isValid) {
+            $number = (string)$this->pointId;
+            $isValid = !empty($number) && $input->get('type')->has();
+        }
+        if ($isValid && $isNew) {
+            $point = [];
+            $point['x'] = $input->get('x')->double();
+            $point['y'] = $input->get('y')->double();
+            $point['location'] = trim($address);
+
+            $type = $input->get('type')->str();
+            $constructions = (new Reference('ConstructionTypes'))
+                ->get();
+            $name = (new Construct())
+                ->getConstructionWithType($type, $constructions);
+            $point['construct'] = (int)$type;
+            $point['name'] = $name;
+
+            $points = json_decode(file_get_contents($filename), true);
+            $points[$number] = $point;
+        }
+
+        $file = false;
+        $json = '';
+        if ($isValid) {
+            $json = json_encode($points);
+            $file = fopen($filename, 'w');
+        }
+
+        $isSuccess = $file !== false;
+        if ($isSuccess) {
+            $isSuccess = fwrite($file, $json) !== false;
+            fclose($file);
+        }
+
+        return $isSuccess;
+    }
+
+    public
+    function store()
     {
         $output = ['success' => false, 'message' => 'General error'];
         /* @var $USER CUser */
@@ -312,8 +385,7 @@ class Landmark
             $output['success'] = ['success' => true,
                 'message' => 'Success update construct;'
                     . ' Fail update points :'
-                    . $this->parameters->get('DOCUMENT_ROOT')->str()
-                    . '/scheme/js/points.js;'];
+                    . $this->getPathToPoints()];
         }
         if ($isSuccess) {
             $output = ['success' => true,
@@ -324,7 +396,8 @@ class Landmark
         return $output;
     }
 
-    public function publish()
+    public
+    function publish()
     {
         $output = ['success' => false, 'message' => 'General error'];
 
@@ -427,6 +500,72 @@ class Landmark
                 $properties);
         }
 
+        $isSuccess = $output['success'];
+        $writeSuccess = false;
+        if ($isSuccess) {
+            $writeSuccess = $this->writePublished();
+        }
+        if ($isSuccess && !$writeSuccess) {
+            $output['message'] = "{$output['message']};" .
+                ' Fail update published';
+        }
+        if ($isSuccess && $writeSuccess) {
+            $output['message'] = "{$output['message']};" .
+                ' Success update published';
+        }
+
         return $output;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPathToPoints()
+    {
+        return $this->parameters->get('DOCUMENT_ROOT')->str()
+            . '/scheme/js/points.json';
+    }
+
+    /**
+     * @return string
+     */
+    private function getPathToPublished()
+    {
+        return $this->parameters->get('DOCUMENT_ROOT')->str()
+            . '/scheme/js/published.json';
+    }
+
+    private function flush()
+    {
+        $construct = new Construct();
+        $points = $construct->get();
+        $json = json_encode($points);
+        $file = fopen($this->getPathToPoints(), 'w');
+        $isSuccess = $file !== false;
+
+        if ($isSuccess) {
+            $isSuccess = fwrite($file, $json);
+            fclose($file);
+        }
+
+        return $isSuccess;
+    }
+
+    private function reset()
+    {
+        $permits = new BitrixSection(7, self::PUBLISHED_PERMITS);
+        $constructs = new BitrixSection(8, self::PUBLISHED_CONSTRUCTS);
+        $construct = new Construct($permits, $constructs);
+        $points = $construct->get();
+        $json = json_encode($points);
+        $file = fopen($this->getPathToPublished(), 'w');
+        $isSuccess = $file !== false;
+
+        if ($isSuccess) {
+            $isSuccess = fwrite($file, $json);
+            fclose($file);
+        }
+
+        return $isSuccess;
     }
 }

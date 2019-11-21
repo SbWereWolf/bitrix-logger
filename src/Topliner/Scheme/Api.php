@@ -42,6 +42,11 @@ class Api
                 $isFound = true;
                 $isValid = $this->parameters->has('number');
                 break;
+            case'flush':
+            case'reset':
+                $isFound = true;
+                $isValid = true;
+                break;
         }
         if ($isValid) {
             $output = (new Landmark($this->parameters))->process();

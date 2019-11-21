@@ -1,6 +1,5 @@
 <?php
 
-use Bitrix\Main\Config\Configuration;
 use Topliner\Scheme\Construct;
 
 const OBTAIN = 'obtain';
@@ -19,24 +18,17 @@ global $DB;
 
 $isExists = false;
 $isObtain = getenv(OBTAIN, true);
-if (!$isObtain) {
-    $isExists = key_exists(OBTAIN, $_GET);
-}
-if (!$isObtain && $isExists) {
-    $isObtain = $isObtain ||
-        Configuration::getValue(OBTAIN) === $_GET[OBTAIN];
-}
 $isSuccess = false;
 $file = null;
 if ($isObtain) {
     $construct = new Construct();
     $points = $construct->get();
     $json = json_encode($points);
-    $json = "var points = $json;";
-    $file = fopen(realpath(__DIR__) . '/js/points.js', 'w');
+    $file = fopen(realpath(__DIR__) . '/js/points.json', 'w');
     $isSuccess = $file !== false;
 }
 if ($isSuccess) {
-    fwrite($file, $json);
+    $isSuccess = fwrite($file, $json);
     fclose($file);
 }
+echo ($isSuccess ? 'Success' : 'Fail') . ' write `/js/points.json`';

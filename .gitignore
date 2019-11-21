@@ -15,5 +15,5 @@
 !/bitrix/templates/scheme-view
 /upload/**
 web.config
-/scheme/js/points.js
-/scheme/js/published.js
+/scheme/js/published.json
+/scheme/js/points.json
