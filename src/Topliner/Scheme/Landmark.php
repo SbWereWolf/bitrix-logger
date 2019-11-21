@@ -548,7 +548,7 @@ class Landmark
             fclose($file);
         }
 
-        return $isSuccess;
+        return ['success' => $isSuccess];
     }
 
     private function reset()
@@ -566,6 +566,6 @@ class Landmark
             fclose($file);
         }
 
-        return $isSuccess;
+        return ['success' => $isSuccess];
     }
 }
