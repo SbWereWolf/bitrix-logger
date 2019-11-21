@@ -3,6 +3,9 @@ html, body {
     margin: 0;
     padding: 0;
 }
+.container-fluid {
+    min-width: 1200px;
+}
 .all {
     width: 100%;
     height: 100%;
@@ -92,10 +95,13 @@ html, body {
 .search-form {
     padding-bottom: 20px;
 }
-
+.rk-type .col-1 {
+    padding-left: 0px;
+}
 .rk-type  input {
     height: 30px;
     width: 30px;
+    padding-left: 0px;
 }
 .rk-type label {
     margin-top: 5px;
@@ -249,6 +255,16 @@ html, body {
 .lversion.lwf-3  .rk-profile { font-size: 20px; }
 .lversion.lwf-3  .rowdiv {font-size: 20px; }
 .lversion.lwc-4 #address { font-size: 24px;}
+@media (min-width:200px) and (max-width: 1279.00px) {
+    .nav-link {
+        padding: 10px 5px !important;
+    }
+}
+@media (min-width:1280px) {
+    .nav-link {
+        padding: .5rem 1rem !important;
+    }
+}
 @media print {
     /* здесь будут стили для печати */
     .lowvisiontriggerdiv { display: none;}

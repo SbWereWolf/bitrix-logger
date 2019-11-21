@@ -1,3 +1,4 @@
+let points;
 jQuery(function ($) {
     const lowVision = Cookies.get("lwversion");
     if (typeof lowVision !== typeof undefined) {
@@ -9,44 +10,38 @@ jQuery(function ($) {
     });
     iconSetup.compose();
     const waitFor = 500;
-    let waitSettings = setTimeout(function makeMapReady() {
-        let isReady = settings.ready;
-        if (isReady) {
-            settings.setup();
+    $.get('/scheme/js/points.json', function(data) {
+        points = data;
+        settings.setup();
 
-            function init() {
-                function setupMap() {
-                    sCenter = [(yy - y) / 2 + y, (xx - x) / 2 + x];
+        function init() {
+            function setupMap() {
+                sCenter = [(yy - y) / 2 + y, (xx - x) / 2 + x];
 
-                    myMap = new ymaps.Map("map", {
-                        // Координаты центра карты: «широта, долгота».
-                        center: sCenter,
-                        // Уровень масштабирования: от 0 (весь мир) до 19.
-                        zoom: 16.0
-                    });
-                    if (settings.admin) {
-                        myMap.events
-                            .add('balloonopen', function () {
-                                landmark.enableMenu();
-                            })
-                            .add('balloonclose', function () {
-                                landmark.disableMenu();
-                                $(landmark.addNewId).prop("disabled",
-                                    false);
-                            });
-                    }
+                myMap = new ymaps.Map("map", {
+                    // Координаты центра карты: «широта, долгота».
+                    center: sCenter,
+                    // Уровень масштабирования: от 0 (весь мир) до 19.
+                    zoom: 16.0
+                });
+                if (settings.admin) {
+                    myMap.events
+                        .add('balloonopen', function () {
+                            landmark.enableMenu();
+                        })
+                        .add('balloonclose', function () {
+                            landmark.disableMenu();
+                            $(landmark.addNewId).prop("disabled",
+                                false);
+                        });
                 }
-
-                setupMap();
-                spreader.place();
             }
 
-            ymaps.ready(init);
+            setupMap();
+            spreader.place();
         }
-        if (!isReady) {
-            waitSettings = setTimeout(makeMapReady, waitFor);
-        }
-    }, waitFor);
+        ymaps.ready(init);
+    }, 'json');
 });
 
 function switchLWVersion(on) {

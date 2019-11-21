@@ -21,7 +21,7 @@ setcookie("api-hash", $BITRIX_SM_UIDH);
         </div>
     </div>
     <div class="container-fluid content">
-        <div class="col-3 align-self-stretch overflow-auto side-left ">
+        <div class="col-3 col-md-4 col-xl-3 align-self-stretch overflow-auto side-left ">
             <div class="tabs">
                 <div class="tab">
                     <ul class="nav nav-tabs" id="leftTabs" role="tablist">
@@ -248,7 +248,7 @@ setcookie("api-hash", $BITRIX_SM_UIDH);
                 </div>
             </div>
         </div>
-        <div id="map" class="col-9  align-self-stretch">
+        <div id="map" class="col-9 col-md-8 col-xl-9 align-self-stretch">
         </div>
     </div>
 </div>

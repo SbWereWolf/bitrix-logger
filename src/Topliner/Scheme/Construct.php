@@ -222,11 +222,42 @@ class Construct
     }
 
     /**
+     * @param ArrayHandler $source
+     * @param string $type
+     * @return string
+     */
+    public static function getConstructionWithType($type,
+                                           $constructions)
+    {
+        $name = null;
+        /* @var $constructions DataManager */
+        if (!$constructions !== null) {
+            /** @noinspection PhpUndefinedMethodInspection */
+            try {
+                $name = $constructions::getList(array(
+                    'select' => array('UF_NAME'),
+                    'filter' => array('UF_TYPE_ID' => $type)
+                ));
+            } catch (Exception $e) {
+                echo $e->getMessage();
+            }
+        }
+        $value = "";
+        if ($name !== null) {
+            /* @var $name Result */
+            $data = $name->Fetch();
+            $value = $data['UF_NAME'];
+        }
+
+        return $value;
+    }
+
+    /**
      * @param string $code
      * @param DataManager $reference
      * @return string
      */
-    public static function getTitleFor( $code, $reference)
+    public static function getTitleFor($code, $reference)
     {
         /* @var $name Result */
         $name = null;
