@@ -79,6 +79,7 @@ class Logger
             global $USER;
             $userId = $USER->GetID();
             $login = $USER->GetLogin();
+            $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $record = array(
                 'CREATED_BY' => $userId,
@@ -86,7 +87,7 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login добавил $title №$itemId",
+                'NAME' => "$name ($login) добавил $title №$itemId",
                 'PREVIEW_TEXT' => var_export($arFields, true),
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -238,6 +239,7 @@ class Logger
             global $USER;
             $userId = $USER->GetID();
             $login = $USER->GetLogin();
+            $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $ELEMENT_ID;
             $record = array(
@@ -246,7 +248,8 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login $action свойства для $title №$itemId",
+                'NAME' => "$name ($login) $action свойства для"
+                    . " $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -372,6 +375,7 @@ class Logger
             global $USER;
             $userId = $USER->GetID();
             $login = $USER->GetLogin();
+            $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $ELEMENT_ID;
             $record = array(
@@ -380,7 +384,8 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login $action свойства для $title №$itemId",
+                'NAME' => "$name ($login) $action свойства для"
+                    . " $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -497,6 +502,7 @@ class Logger
             global $USER;
             $userId = $USER->GetID();
             $login = $USER->GetLogin();
+            $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $was->get('ID')->int();
             $record = array(
@@ -505,7 +511,7 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login изменил $title №$itemId",
+                'NAME' => "$name ($login) изменил $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -582,6 +588,7 @@ class Logger
             global $USER;
             $userId = $USER->GetID();
             $login = $USER->GetLogin();
+            $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $record = array(
                 'CREATED_BY' => $userId,
@@ -589,7 +596,7 @@ class Logger
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "$login удалил $title №$itemId",
+                'NAME' => "$name ($login) удалил $title №$itemId",
                 'PREVIEW_TEXT' => var_export($arFields, true),
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,

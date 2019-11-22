@@ -10,6 +10,7 @@ function FunctionName(params)
 */
 
 use Topliner\Scheme\Logger;
+use Topliner\Scheme\PermitTab;
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php');
 
@@ -47,3 +48,6 @@ AddEventHandler(IBLOCK_MODULE, 'OnIBlockElementSetPropertyValuesEx',
     Array(Logger::class, 'OnSetPropertyValuesEx'));
 AddEventHandler(IBLOCK_MODULE, 'OnAfterIBlockElementSetPropertyValuesEx',
     Array(Logger::class, 'afterSetPropertyValuesEx'));
+
+AddEventHandler('main', 'OnAdminIBlockElementEdit',
+    Array(PermitTab::class, 'OnInit'));

@@ -8,7 +8,6 @@ use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\ORM\Query\Result;
 use CDatabase;
 use CIBlockElement;
-use CIBlockResult;
 use CModule;
 use CUser;
 use Exception;
@@ -39,27 +38,6 @@ class Landmark
     public function __construct(ArrayHandler $parameters)
     {
         $this->parameters = $parameters;
-    }
-
-    /**
-     * @param $response
-     * @return bool
-     */
-    private static function isRequestSuccess($response)
-    {
-        $isResult = false;
-        if (!empty($response)) {
-            $isResult = $response instanceof CIBlockResult;
-        }
-        $status = false;
-        if ($isResult) {
-            $status = $response->result !== false;
-        }
-        if (!$isResult) {
-            $status = $response !== false;
-        }
-
-        return $status;
     }
 
     /**
@@ -459,13 +437,13 @@ class Landmark
             $select = ['ID', 'PROPERTY_permit_of_ad'];
             $response = CIBlockElement::GetList([], $filter,
                 false, false, $select);
-            $isExistsChild = static::isRequestSuccess($response);
+            $isExistsChild = BitrixOrm::isRequestSuccess($response);
         }
         $child = false;
         if ($isExistsChild) {
             $child = $response->Fetch();
         }
-        $gotChild = static::isFetchSuccess($child);
+        $gotChild = BitrixOrm::isFetchSuccess($child);
         $childId = 0;
         $childPermit = 0;
         $gotPublicPermit = false;
@@ -672,17 +650,4 @@ class Landmark
         return ['success' => $isSuccess];
     }
 
-    /**
-     * @param array|false $fetched
-     * @return bool
-     */
-    private static function isFetchSuccess($fetched)
-    {
-        $status = is_array($fetched);
-        if (!$status) {
-            $status = $fetched !== false;
-        }
-
-        return $status;
-    }
 }
