@@ -75,6 +75,7 @@ class Landmark
                     $properties[$key] = $value['VALUE'];
                 }
             }
+            $properties['original'] = $source['ID'];
             $properties[BitrixScheme::PUBLISH_STATUS]
                 = BitrixScheme::APPROVED;
         }

@@ -1,6 +1,5 @@
 <?php
 
-use Bitrix\Main\Config\Configuration;
 use Topliner\Scheme\Placement;
 
 const OBTAIN = 'obtain';
@@ -16,13 +15,6 @@ global $DB;
 
 $isExists = false;
 $isObtain = getenv(OBTAIN, true);
-if (!$isObtain) {
-    $isExists = key_exists(OBTAIN, $_GET);
-}
-if (!$isObtain && $isExists) {
-    $isObtain = $isObtain ||
-        Configuration::getValue(OBTAIN) === $_GET[OBTAIN];
-}
 $isSuccess = false;
 $file = null;
 if ($isObtain) {
@@ -35,7 +27,7 @@ if ($isObtain) {
     $isSuccess = $file !== false;
 }
 if ($isSuccess) {
-    fwrite($file, $json);
+    $isSuccess = fwrite($file, $json);
     fclose($file);
 }
 

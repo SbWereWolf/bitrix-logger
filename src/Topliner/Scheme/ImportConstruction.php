@@ -6,11 +6,17 @@ use CDatabase;
 use CIBlockElement;
 use CModule;
 use Exception;
+use LanguageSpecific\ArrayHandler;
 use mysqli;
 use PDO;
 
 class ImportConstruction
 {
+    const GEOCODER =
+        'https://geocode-maps.yandex.ru/1.x/?lang=ru_RU&format=json'
+        . '&apikey=344dde82-33ad-407f-b719-4e880eb28ff1&results=1'
+        . '&geocode=';
+
     const SHORT = 'SHORT';
     /**
      * @var string
@@ -32,14 +38,6 @@ class ImportConstruction
      * @var string
      */
     private $password;
-    /**
-     * @var BitrixSection
-     */
-    private $constructions = null;
-    /**
-     * @var BitrixSection
-     */
-    private $permit = null;
 
     /**
      * ImportConstruction constructor.
@@ -72,6 +70,15 @@ class ImportConstruction
         if ($connection === null) {
             echo 'не могу соединиться с базой' . PHP_EOL;
         }
+        if ($isSuccess) {
+            $command = $connection->exec('SET NAMES \'utf8mb4\''
+                . ' COLLATE \'utf8mb4_unicode_ci\'');
+            $isSuccess = $command !== false;
+        }
+        if ($isSuccess) {
+            $command = $connection->exec('START TRANSACTION');
+            $isSuccess = $command !== false;
+        }
         $getConstruction = null;
         if ($isSuccess) {
             $getConstruction = $connection->prepare("
@@ -85,25 +92,70 @@ from
     on sc.type = tt.id
     join b_hlbd_construction_types ct
     on ct.UF_XML_ID = tt.code
-    left join tx_permit_scheme_construction pc
+    join tx_permit_scheme_construction pc
     on sc.uid = pc.tx_scheme_construction_uid
-    left join tx_permit tp
+    join tx_permit tp
     on pc.tx_permit_id = tp.id
-    left join raw_permit rp
+    join raw_permit rp
     on rp.permit = tp.permit
     and rp.unixtime = tp.issuing_at
-ORDER BY tp.issuing_at DESC,tp.permit, sc.x,sc.y
+WHERE
+    pc.checked_construction = 0
+UNION
+select
+    rp.remark, sc.x,sc.y,
+    ct.UF_XML_ID construction, ct.UF_NAME,
+    tp.issuing_at,tp.permit
+from
+    tx_scheme_construction sc
+    join tx_type tt
+    on sc.type = tt.id
+    join b_hlbd_construction_types ct
+    on ct.UF_XML_ID = tt.code
+    join tx_permit_scheme_construction pc
+    on sc.uid = pc.checked_construction
+    join tx_permit tp
+    on pc.tx_permit_id = tp.id
+    join raw_permit rp
+    on rp.permit = tp.permit
+    and rp.unixtime = tp.issuing_at
+WHERE
+    pc.checked_construction <> 0
+UNION
+select
+    '' remark, sc1.x, sc1.y,
+    ct.UF_XML_ID construction, ct.UF_NAME,
+    0 issuing_at, 0 permit
+from
+    tx_scheme_construction sc1
+        join tx_type tt
+        on sc1.type = tt.id
+        join b_hlbd_construction_types ct
+        on ct.UF_XML_ID = tt.code
+WHERE
+      tt.id <> 0
+      and
+    NOT EXISTS(select NULL
+               from
+                   tx_scheme_construction sc
+                   join tx_permit_scheme_construction pc
+                   on sc.uid = pc.tx_scheme_construction_uid
+               WHERE
+                     sc.uid = sc1.uid and
+                       pc.checked_construction = 0
+        )
+AND NOT EXISTS(select NULL
+               from
+               tx_scheme_construction sc
+               join tx_permit_scheme_construction pc
+               on sc.uid = pc.checked_construction
+               WHERE
+                       sc.uid = sc1.uid and
+               pc.checked_construction <> 0
+    )
+ORDER BY issuing_at, permit, x, y
 ");
             $isSuccess = $getConstruction !== false;
-        }
-        if ($isSuccess) {
-            $command = $connection->exec('SET NAMES \'utf8mb4\''
-                . ' COLLATE \'utf8mb4_unicode_ci\'');
-            $isSuccess = $command !== false;
-        }
-        if ($isSuccess) {
-            $command = $connection->exec('START TRANSACTION');
-            $isSuccess = $command !== false;
         }
         if ($isSuccess) {
             $isSuccess = $getConstruction->execute();
@@ -117,6 +169,41 @@ ORDER BY tp.issuing_at DESC,tp.permit, sc.x,sc.y
             $command = $connection->exec('ROLLBACK');
             $connection = null;
         }
+
+        $curl = null;
+        foreach ($bulkConstruction as $key => $construct) {
+            $tryAddress = 0 === (int)$construct['permit'];
+            if ($tryAddress && $curl === null) {
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+                curl_setopt($curl, CURLOPT_HTTPGET, true);
+            }
+            $response = null;
+            if ($tryAddress) {
+                $target = "{$construct['x']},{$construct['y']}";
+                curl_setopt($curl, CURLOPT_URL, self::GEOCODER . $target);
+                $response = curl_exec($curl);
+            }
+            $error = '';
+            $curlErrorNumber = curl_errno($curl);
+            if (!empty($response) && !empty($curlErrorNumber)) {
+                $error = curl_error($curl);
+                echo PHP_EOL . 'c-url error : ' . PHP_EOL . $error;
+            }
+            if (empty($error)) {
+                $info = json_decode($response, true);
+                $handler = new ArrayHandler($info);
+                $bulkConstruction[$key]['remark'] = $handler
+                    ->pull('response')
+                    ->pull('GeoObjectCollection')
+                    ->pull('featureMember')->pull()
+                    ->pull('GeoObject')->get('name')->str();
+            }
+        }
+
         CModule::IncludeModule("iblock");
 
         /* @var $DB CDatabase */
@@ -130,18 +217,17 @@ ORDER BY tp.issuing_at DESC,tp.permit, sc.x,sc.y
         $dbConn->query('SET foreign_key_checks=0');
 
 
-        $this->constructions = new BitrixSection(8, 6);
-        $this->permit = new BitrixSection(7, 7);
+        $constructions = BitrixScheme::getConstructs();
         foreach ($bulkConstruction as $item) {
 
             $date = ConvertTimeStamp(time(), 'FULL');
             $fields = array(
                 'MODIFIED_BY' => 2,
-                'IBLOCK_ID' => $this->constructions->getBlock(),
-                'IBLOCK_SECTION_ID' => $this->constructions->getSection(),
+                'IBLOCK_ID' => $constructions->getBlock(),
+                'IBLOCK_SECTION_ID' => $constructions->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "{$item['UF_NAME']}",
+                'NAME' => $item['UF_NAME'],
                 'PREVIEW_TEXT' => '',
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -159,22 +245,23 @@ ORDER BY tp.issuing_at DESC,tp.permit, sc.x,sc.y
             $payload = [];
             if ($isSuccess) {
                 $payload = array(
-                    'construction_type' => $item['construction'],
-                    'address_remark' => $item['remark'],
+                    'type' => $item['construction'],
+                    'remark' => $item['remark'],
                     'longitude' => $item['x'],
                     'latitude' => $item['y'],
                 );
             }
             $isExists = !empty($item['permit']);
+            $permit = BitrixScheme::getPermits();
             $response = null;
             if ($isExists) {
                 $issuingAt = gmdate('Y-m-d', $item['issuing_at']);
                 $response = CIBlockElement::GetList(
                     Array('ID' => 'ASC'),
-                    Array('IBLOCK_ID' => $this->permit->getBlock(),
-                        'SECTION_ID' => $this->permit->getSection(),
-                        'PROPERTY_permit_number' => $item['permit'],
-                        'PROPERTY_permit_issuing_at' => $issuingAt,
+                    Array('IBLOCK_ID' => $permit->getBlock(),
+                        'SECTION_ID' => $permit->getSection(),
+                        'PROPERTY_number' => $item['permit'],
+                        'PROPERTY_issuing_at' => $issuingAt,
                     ),
                     false,
                     false,
@@ -188,7 +275,7 @@ ORDER BY tp.issuing_at DESC,tp.permit, sc.x,sc.y
             }
             if ($isSuccess) {
                 CIBlockElement::SetPropertyValuesEx($id,
-                    $this->constructions->getBlock(),
+                    $constructions->getBlock(),
                     $payload);
             }
         }

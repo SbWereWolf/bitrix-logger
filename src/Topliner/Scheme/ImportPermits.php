@@ -35,10 +35,6 @@ class ImportPermits
     /**
      * @var BitrixSection
      */
-    private $constructions = null;
-    /**
-     * @var BitrixSection
-     */
     private $permit = null;
 
     /**
@@ -75,21 +71,17 @@ class ImportPermits
         $getPermits = null;
         if ($isSuccess) {
             $getPermits = $connection->prepare("
-select
+SELECT
        rp.permit,rp.remark,
-       tp.issuing_at,tp.start,tp.finish,
-       ct.UF_XML_ID construction ,da.UF_XML_ID distributor
-from
+       tp.issuing_at,tp.start,tp.finish, 
+       da.UF_XML_ID distributor
+FROM
      raw_permit rp
      join tx_permit tp
      on rp.permit = tp.permit
      and rp.unixtime = tp.issuing_at
-    join tx_type tt
-    on tp.tx_type_id = tt.id
-    join b_hlbd_construction_types ct
-    on ct.UF_XML_ID = tt.code
-    join b_hlbd_distributors_of_ads da
-    on da.UF_NAME = rp.distributor
+     join b_hlbd_distributors_of_ads da
+     on da.UF_NAME = rp.distributor
 ORDER BY tp.issuing_at,tp.permit
 ");
             $isSuccess = $getPermits !== false;
@@ -115,8 +107,8 @@ ORDER BY tp.issuing_at,tp.permit
             $command = $connection->exec('ROLLBACK');
             $connection = null;
         }
-        CModule::IncludeModule("iblock");
 
+        CModule::IncludeModule("iblock");
         /* @var $DB CDatabase */
         global $DB;
 
@@ -127,9 +119,7 @@ ORDER BY tp.issuing_at,tp.permit
         $dbConn->query('SET unique_checks=0');
         $dbConn->query('SET foreign_key_checks=0');
 
-
-        $this->constructions = new BitrixSection(8, 6);
-        $this->permit = new BitrixSection(7, 7);
+        $this->permit = BitrixScheme::getPermits();
         foreach ($bulkPermits as $item) {
 
             $date = ConvertTimeStamp(time(), 'FULL');
@@ -140,7 +130,7 @@ ORDER BY tp.issuing_at,tp.permit
                 'IBLOCK_SECTION_ID' => $this->permit->getSection(),
                 'ACTIVE_FROM' => $date,
                 'ACTIVE' => 'Y',
-                'NAME' => "Разрешение №{$item['permit']} от {$issuingAt}",
+                'NAME' => "Разрешение №{$item['permit']} от $issuingAt",
                 'PREVIEW_TEXT' => '',
                 'PREVIEW_TEXT_TYPE' => 'text',
                 'WF_STATUS_ID' => 1,
@@ -161,13 +151,12 @@ ORDER BY tp.issuing_at,tp.permit
                 CIBlockElement::SetPropertyValuesEx($id,
                     $this->permit->getBlock(),
                     array(
-                        'permit_number' => $item['permit'],
-                        'permit_issuing_at' => $issuingAt,
-                        'permit_start' => $start,
-                        'permit_finish' => $finish,
-                        'ad_distributor' => $item['distributor'],
-                        'construction_type' => $item['construction'],
-                        'address_remark' => $item['remark'],
+                        'number' => $item['permit'],
+                        'issuing_at' => $issuingAt,
+                        'start' => $start,
+                        'finish' => $finish,
+                        'distributor' => $item['distributor'],
+                        'remark' => $item['remark'],
                     ));
             }
         }
