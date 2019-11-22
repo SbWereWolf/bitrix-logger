@@ -9,6 +9,7 @@ class BitrixScheme
     const PUBLISH_STATUS = 'publish_status';
     const DRAFT = 'draft';
     const APPROVED = 'approved';
+    const IMAGES = 'images';
 
     /**
      * @return BitrixSection

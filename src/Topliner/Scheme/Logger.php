@@ -179,21 +179,37 @@ class Logger
             $after = new ArrayHandler($PROPERTY_VALUES);
             foreach ($PROPERTY_VALUES as $key => $value) {
 
+                $isImages = static::$names[$key]['CODE']
+                    === BitrixScheme::IMAGES;
                 $isDiffer = false;
-                if ($after->has($key)) {
-                    $isDiffer = ($after->pull($key)->pull()->get('VALUE')->str()
-                            != $was->pull($key)->pull()->get('VALUE')->str())
-                        && !(empty($after->pull($key)->pull()->get('VALUE')->str())
-                            && empty($was->pull($key)->pull()->get('VALUE')->str()));
+                $toBe = '';
+                $asIs = '';
+                if ($isImages) {
+                    $imagesToBe = $after->get($key)->asIs();
+                    $imagesAsIs = $was->get($key)->asIs();
+                    foreach ($imagesToBe as $fileId => $image) {
+                        $export = var_export($image, true);
+                        $toBe = "$toBe КАРТИНКА $export; ";
+                        if (key_exists($fileId, $imagesAsIs)) {
+                            $export = var_export($imagesAsIs[$fileId],
+                                true);
+                            $asIs = "$asIs КАРТИНКА $export; ";
+                        }
+                    }
+                    $isDiffer = $toBe !== $asIs;
+                }
+                if (!$isImages && $after->has($key)) {
+                    $toBe = $after->pull($key)->pull()
+                        ->get('VALUE')->str();
+                    $asIs = $was->pull($key)->pull()
+                        ->get('VALUE')->str();
+                    $isDiffer = ($toBe != $asIs)
+                        && !(empty($toBe) && empty($asIs));
                 }
                 if ($isDiffer) {
                     $name = static::$names[$key]['NAME'];
-                    $remark = $remark
-                        . "`$name` было "
-                        . "`{$was->pull($key)->pull()->get('VALUE')->asIs()}`"
-                        . " стало "
-                        . "`{$after->pull($key)->pull()->get('VALUE')->asIs()}`"
-                        . '; ';
+                    $remark = "$remark `$name` было `$asIs`"
+                        . " стало `$toBe`; ";
                 }
 
             }
