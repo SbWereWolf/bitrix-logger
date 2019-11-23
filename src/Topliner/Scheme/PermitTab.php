@@ -66,7 +66,6 @@ class PermitTab
                 'PROPERTY_REMARK',];
             $response = CIBlockElement::GetList([], $filter,
                 false, false, $select);
-            $isExists = BitrixOrm::isRequestSuccess($response);
 
             $rows = [];
             while ($constructs = $response->Fetch()) {

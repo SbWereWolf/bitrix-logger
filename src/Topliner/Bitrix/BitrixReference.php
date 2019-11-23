@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Topliner\Scheme;
+namespace Topliner\Bitrix;
 
 
 use Bitrix\Highloadblock\HighloadBlockTable;

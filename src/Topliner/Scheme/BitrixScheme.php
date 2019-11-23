@@ -4,6 +4,8 @@
 namespace Topliner\Scheme;
 
 
+use Topliner\Bitrix\BitrixSection;
+
 class BitrixScheme
 {
     const PUBLISH_STATUS = 'publish_status';

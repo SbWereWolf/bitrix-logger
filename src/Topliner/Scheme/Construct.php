@@ -13,6 +13,8 @@ use CIBlockElement;
 use CModule;
 use Exception;
 use LanguageSpecific\ArrayHandler;
+use Topliner\Bitrix\BitrixReference;
+use Topliner\Bitrix\BitrixSection;
 use Topliner\Routines\Utility;
 
 class Construct
@@ -60,7 +62,8 @@ class Construct
             ->getSection()];
         $values = [];
         CIBlockElement::GetPropertyValuesArray($values,
-            $this->constructs->getBlock(), $filter);
+            $this->constructs->getBlock(), $filter, [],
+            ['GET_RAW_DATA' => 'Y']);
 
         $permits = [];
         $result = [];
@@ -70,14 +73,13 @@ class Construct
             ->get();
         $ofLightenings = (new BitrixReference('Lightening'))
             ->get();
-        //echo \CFile::GetPath(63);
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
             $data['title'] = $source
                 ->pull('title')->get(self::VALUE)->str();
 
-            $properties = self::getConstruction($source, $constructions);
+            $properties = static::getConstruction($source, $constructions);
 
             if (!empty($properties)) {
                 $data['construct'] = $properties['id'];
@@ -147,7 +149,8 @@ class Construct
             ->getSection(), 'ID' => $permitFilter];
         $values = [];
         CIBlockElement::GetPropertyValuesArray($values,
-            $this->permits->getBlock(), $filter);
+            $this->permits->getBlock(), $filter, [],
+            ['GET_RAW_DATA' => 'Y']);
 
         $permitsInfo = [];
 
@@ -183,6 +186,7 @@ class Construct
 
             $permitsInfo[$key] = $data;
         }
+        $values = [];
 
         foreach ($permits as $permitKey => $permit) {
             foreach ($permit as $construction) {

@@ -13,6 +13,8 @@ use Exception;
 use LanguageSpecific\ArrayHandler;
 use LanguageSpecific\ValueHandler;
 use mysqli;
+use Topliner\Bitrix\BitrixOrm;
+use Topliner\Bitrix\BitrixReference;
 
 class Landmark
 {
