@@ -8,7 +8,7 @@ use Bitrix\Highloadblock\HighloadBlockTable;
 use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\SystemException;
 
-class Reference
+class BitrixReference
 {
     private $dictionary = '';
 

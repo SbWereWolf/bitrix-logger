@@ -70,28 +70,22 @@ class Logger
             $isOk = $itemId > 0;
         }
 
-        $audit = new BitrixSection(9, 12, 'аудит');
+        $audit = BitrixScheme::getAudits();
         $id = 0;
         $date = '';
         $login = '';
         if ($isOk) {
             /* @var $USER CUser */
             global $USER;
-            $userId = $USER->GetID();
             $login = $USER->GetLogin();
             $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $record = array(
-                'CREATED_BY' => $userId,
                 'IBLOCK_ID' => $audit->getBlock(),
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "$name ($login) добавил $title №$itemId",
                 'PREVIEW_TEXT' => var_export($arFields, true),
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();
@@ -229,7 +223,7 @@ class Logger
         }
 
         $itemId = 0;
-        $audit = new BitrixSection(9, 12, 'аудит');
+        $audit = BitrixScheme::getAudits();
         $id = 0;
         $date = '';
         $login = '';
@@ -237,23 +231,17 @@ class Logger
         if ($has) {
             /* @var $USER CUser */
             global $USER;
-            $userId = $USER->GetID();
             $login = $USER->GetLogin();
             $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $ELEMENT_ID;
             $record = array(
-                'CREATED_BY' => $userId,
                 'IBLOCK_ID' => $audit->getBlock(),
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "$name ($login) $action свойства для"
                     . " $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();
@@ -365,7 +353,7 @@ class Logger
         }
 
         $itemId = 0;
-        $audit = new BitrixSection(9, 12, 'аудит');
+        $audit = BitrixScheme::getAudits();
         $id = 0;
         $date = '';
         $login = '';
@@ -373,23 +361,17 @@ class Logger
         if ($has) {
             /* @var $USER CUser */
             global $USER;
-            $userId = $USER->GetID();
             $login = $USER->GetLogin();
             $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $ELEMENT_ID;
             $record = array(
-                'CREATED_BY' => $userId,
                 'IBLOCK_ID' => $audit->getBlock(),
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "$name ($login) $action свойства для"
                     . " $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();
@@ -491,7 +473,7 @@ class Logger
                     $remark);
             }
         }
-        $audit = new BitrixSection(9, 12, 'аудит');
+        $audit = BitrixScheme::getAudits();
 
         $id = 0;
         $date = '';
@@ -500,22 +482,16 @@ class Logger
         if ($has) {
             /* @var $USER CUser */
             global $USER;
-            $userId = $USER->GetID();
             $login = $USER->GetLogin();
             $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $itemId = $was->get('ID')->int();
             $record = array(
-                'CREATED_BY' => $userId,
                 'IBLOCK_ID' => $audit->getBlock(),
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "$name ($login) изменил $title №$itemId",
                 'PREVIEW_TEXT' => $remark,
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();
@@ -579,28 +555,22 @@ class Logger
             $isOk = $itemId > 0;
         }
 
-        $audit = new BitrixSection(9, 12, 'аудит');
+        $audit = BitrixScheme::getAudits();
         $id = 0;
         $date = '';
         $login = '';
         if ($isOk) {
             /* @var $USER CUser */
             global $USER;
-            $userId = $USER->GetID();
             $login = $USER->GetLogin();
             $name = $USER->GetFullName();
             $date = ConvertTimeStamp(time(), 'FULL');
             $record = array(
-                'CREATED_BY' => $userId,
                 'IBLOCK_ID' => $audit->getBlock(),
                 'IBLOCK_SECTION_ID' => $audit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "$name ($login) удалил $title №$itemId",
                 'PREVIEW_TEXT' => var_export($arFields, true),
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();

@@ -125,16 +125,10 @@ ORDER BY tp.issuing_at,tp.permit
             $date = ConvertTimeStamp(time(), 'FULL');
             $issuingAt = ConvertTimeStamp($item['issuing_at'], self::SHORT);
             $fields = array(
-                'MODIFIED_BY' => 2,
                 'IBLOCK_ID' => $this->permit->getBlock(),
                 'IBLOCK_SECTION_ID' => $this->permit->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => "Разрешение №{$item['permit']} от $issuingAt",
-                'PREVIEW_TEXT' => '',
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();

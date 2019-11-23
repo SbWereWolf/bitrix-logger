@@ -9,7 +9,6 @@ use Bitrix\Main\ORM\Query\Result;
 use CDatabase;
 use CIBlockElement;
 use CModule;
-use CUser;
 use Exception;
 use LanguageSpecific\ArrayHandler;
 use LanguageSpecific\ValueHandler;
@@ -47,17 +46,11 @@ class Landmark
      */
     private static function copyElement(array $element, $sectionId)
     {
-        /* @var $USER CUser */
-        global $USER;
-
         $source = $element;
-        $userId = (int)$USER->GetID();
         $date = ConvertTimeStamp(time(), 'FULL');
 
-        $element['CREATED_BY'] = $userId;
         $element['IBLOCK_SECTION_ID'] = $sectionId;
         $element['ACTIVE_FROM'] = $date;
-        $element['IN_SECTIONS'] = 'Y';
         $copy = (int)(new CIBlockElement())->Add($element);
         $values = [];
         if (!empty($copy)) {
@@ -118,15 +111,13 @@ class Landmark
     public function addNew()
     {
         $output = ['success' => false, 'message' => 'General error'];
-        /* @var $USER CUser */
-        global $USER;
         /* @var $DB CDatabase */
         global $DB;
 
         /** @var $dbConn mysqli */
         $DB->StartTransaction();
 
-        $constructions = (new Reference('ConstructionTypes'))
+        $constructions = (new BitrixReference('ConstructionTypes'))
             ->get();
         $type = '';
         $title = 'Новая рекламная конструкция';
@@ -149,22 +140,14 @@ class Landmark
             $title = $record['UF_NAME'];
         }
 
-        $constSec = new BitrixSection(8, 6);
-
-        $userId = $USER->GetID();
+        $constSec = BitrixScheme::getConstructs();
         $date = ConvertTimeStamp(time(), 'FULL');
+
         $fields = array(
-            'CREATED_BY' => $userId,
-            'MODIFIED_BY' => $userId,
             'IBLOCK_ID' => $constSec->getBlock(),
             'IBLOCK_SECTION_ID' => $constSec->getSection(),
             'ACTIVE_FROM' => $date,
-            'ACTIVE' => 'Y',
             'NAME' => $title,
-            'PREVIEW_TEXT' => '',
-            'PREVIEW_TEXT_TYPE' => 'text',
-            'WF_STATUS_ID' => 1,
-            'IN_SECTIONS' => 'Y',
         );
 
         $element = new CIBlockElement();
@@ -182,7 +165,7 @@ class Landmark
         if ($isSuccess) {
             $output['id'] = $id;
             $this->pointId = $output['id'];
-            $constructions = (new Reference('ConstructionTypes'))
+            $constructions = (new BitrixReference('ConstructionTypes'))
                 ->get();
             $output['name'] = (new Construct())
                 ->getConstructionWithType(
@@ -310,7 +293,7 @@ class Landmark
             $point['location'] = trim($address);
 
             $type = $input->get('type')->str();
-            $constructions = (new Reference('ConstructionTypes'))
+            $constructions = (new BitrixReference('ConstructionTypes'))
                 ->get();
             $name = (new Construct())
                 ->getConstructionWithType($type, $constructions);
@@ -339,62 +322,40 @@ class Landmark
 
     public function store()
     {
-        $output = ['success' => false, 'message' => 'General error'];
-        /* @var $USER CUser */
-        global $USER;
         /* @var $DB CDatabase */
         global $DB;
-
-        /** @var $dbConn mysqli */
         $DB->StartTransaction();
 
-        $fields = array('MODIFIED_BY' => $USER->GetID(),);
-        $id = $this->parameters->get('number')->int();
-        $element = new CIBlockElement();
-
-        $isSuccess = $element->Update($id, $fields);
-        $fail = false;
-        if (!$isSuccess) {
-            $fail = true;
-            $DB->Rollback();
-            $output['message'] = 'Fail update construction'
-                . var_export($id, true)
-                . var_export($fields, true);
-        }
-        $payload = [];
-        $address = ValueHandler::asUndefined();
-        if ($isSuccess) {
-            $payload = array(
-                'longitude' => $this->parameters->get('x')->double(),
-                'latitude' => $this->parameters->get('y')->double(),
-            );
-            $address = $this->parameters->get('address');
-        }
+        $payload = [
+            'longitude' => $this->parameters->get('x')->double(),
+            'latitude' => $this->parameters->get('y')->double(),
+        ];
+        $address = $this->parameters->get('address');
         $location = $address->str();
         if (!empty($location)) {
             $payload['location'] = $location;
         }
-        if ($isSuccess) {
-            $constSec = new BitrixSection(8, 6);
-            CIBlockElement::SetPropertyValuesEx($id,
-                $constSec->getBlock(),
-                $payload);
+        $constSec = BitrixScheme::getConstructs();
+        $id = $this->parameters->get('number')->int();
 
-            $DB->Commit();
-            $isSuccess = $this->writePoints();
-        }
-        if (!$isSuccess && !$fail) {
-            /** @noinspection PhpUnusedLocalVariableInspection */
-            $fail = true;
-            $output['success'] = ['success' => true,
-                'message' => 'Success update construct;'
-                    . ' Fail update points :'
-                    . $this->getPathToPoints()];
+        Logger::$operation = Logger::CHANGE;
+        CIBlockElement::SetPropertyValuesEx($id,
+            $constSec->getBlock(),
+            $payload);
+
+        $DB->Commit();
+        $output = ['success' => true,
+            'message' => 'Success update construct;'];
+
+        $isSuccess = $this->writePoints();
+        if (!$isSuccess) {
+            $output['message'] = $output['message']
+                . ' Fail update points :'
+                . $this->getPathToPoints();
         }
         if ($isSuccess) {
-            $output = ['success' => true,
-                'message' => 'Success update construct;'
-                    . ' Success update points;'];
+            $output['message'] = $output['message']
+                . ' Success update points;';
         }
 
         return $output;
@@ -486,17 +447,11 @@ class Landmark
         $source = [];
         $published = 0;
         if ($isConstructFound) {
-            /* @var $USER CUser */
-            global $USER;
-
             $source = $construct;
-            $userId = (int)$USER->GetID();
             $date = ConvertTimeStamp(time(), 'FULL');
 
-            $construct['CREATED_BY'] = $userId;
             $construct['IBLOCK_SECTION_ID'] = self::PUBLISHED_CONSTRUCTS;
             $construct['ACTIVE_FROM'] = $date;
-            $construct['IN_SECTIONS'] = 'Y';
             $published = (new CIBlockElement())->Add($construct);
         }
         $hasCopy = !empty($published);
@@ -635,8 +590,8 @@ class Landmark
 
     private function reset()
     {
-        $permits = new BitrixSection(7, self::PUBLISHED_PERMITS);
-        $constructs = new BitrixSection(8, self::PUBLISHED_CONSTRUCTS);
+        $permits = BitrixScheme::getPublishedPermits();
+        $constructs = BitrixScheme::getPublishedConstructs();
         $construct = new Construct($permits, $constructs);
         $points = $construct->get();
         $json = json_encode($points);

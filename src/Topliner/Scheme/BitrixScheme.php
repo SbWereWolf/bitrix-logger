@@ -42,4 +42,12 @@ class BitrixScheme
     {
         return new BitrixSection(7, 8, 'Пуб. Разрешние');
     }
+
+    /**
+     * @return BitrixSection
+     */
+    public static function getAudits()
+    {
+        return new BitrixSection(9, 12, 'аудит');
+    }
 }

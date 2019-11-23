@@ -15,8 +15,16 @@ $isExists = false;
 $isObtain = getenv(OBTAIN, true);
 $isSuccess = false;
 if ($isObtain) {
-    $placement = new ImportPermits($DBType, $DBHost, $DBName, $DBLogin,
-        $DBPassword);
-    $placement->run();
+    /**
+     * @global CUser $USER
+     */
+    global $USER;
+    $isSuccess = $USER->Authorize(1);
+
+    if ($isSuccess) {
+        $import = new ImportPermits($DBType, $DBHost, $DBName, $DBLogin,
+            $DBPassword);
+        $import->run();
+    }
 }
 

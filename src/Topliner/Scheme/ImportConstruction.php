@@ -184,7 +184,8 @@ ORDER BY issuing_at, permit, x, y
             $response = null;
             if ($tryAddress) {
                 $target = "{$construct['x']},{$construct['y']}";
-                curl_setopt($curl, CURLOPT_URL, self::GEOCODER . $target);
+                curl_setopt($curl, CURLOPT_URL,
+                    self::GEOCODER . $target);
                 $response = curl_exec($curl);
             }
             $error = '';
@@ -193,7 +194,7 @@ ORDER BY issuing_at, permit, x, y
                 $error = curl_error($curl);
                 echo PHP_EOL . 'c-url error : ' . PHP_EOL . $error;
             }
-            if (empty($error)) {
+            if (!empty($response) && empty($error)) {
                 $info = json_decode($response, true);
                 $handler = new ArrayHandler($info);
                 $bulkConstruction[$key]['remark'] = $handler
@@ -222,16 +223,10 @@ ORDER BY issuing_at, permit, x, y
 
             $date = ConvertTimeStamp(time(), 'FULL');
             $fields = array(
-                'MODIFIED_BY' => 2,
                 'IBLOCK_ID' => $constructions->getBlock(),
                 'IBLOCK_SECTION_ID' => $constructions->getSection(),
                 'ACTIVE_FROM' => $date,
-                'ACTIVE' => 'Y',
                 'NAME' => $item['UF_NAME'],
-                'PREVIEW_TEXT' => '',
-                'PREVIEW_TEXT_TYPE' => 'text',
-                'WF_STATUS_ID' => 1,
-                'IN_SECTIONS' => 'Y',
             );
 
             $element = new CIBlockElement();

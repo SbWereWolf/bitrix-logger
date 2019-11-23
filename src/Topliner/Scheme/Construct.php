@@ -64,11 +64,11 @@ class Construct
 
         $permits = [];
         $result = [];
-        $constructions = (new Reference('ConstructionTypes'))
+        $constructions = (new BitrixReference('ConstructionTypes'))
             ->get();
-        $ofSurfaces = (new Reference('ConstructionFieldType'))
+        $ofSurfaces = (new BitrixReference('ConstructionFieldType'))
             ->get();
-        $ofLightenings = (new Reference('Lightening'))
+        $ofLightenings = (new BitrixReference('Lightening'))
             ->get();
         //echo \CFile::GetPath(63);
         foreach ($values as $key => $value) {
@@ -153,7 +153,7 @@ class Construct
 
         CModule::IncludeModule('highloadblock');
 
-        $ofDistributors = (new Reference('DistributorsOfAds'))
+        $ofDistributors = (new BitrixReference('DistributorsOfAds'))
             ->get();
         foreach ($values as $key => $value) {
             $data = [];
