@@ -111,7 +111,7 @@ const landmark = {
                 $.get('/scheme/js/points.json', function(data) {
                     myMap.geoObjects.removeAll();
                     points = data;
-                    spreader.place();
+                    landmarkFilter.run();
                     landmark.unblock();
                 }, 'json');
             } else {
