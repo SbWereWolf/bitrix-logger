@@ -108,7 +108,7 @@ const landmark = {
         landmark.block();
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             if(result.success) {
-                $.get('/scheme/js/points.json', function(data) {
+                $.get('/scheme/js/points.json?' + randStr(), function(data) {
                     myMap.geoObjects.removeAll();
                     points = data;
                     landmarkFilter.run();

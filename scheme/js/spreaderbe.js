@@ -1,3 +1,4 @@
+let Places = [];
 const spreader = {
     letClusterize: true,
     small: 20,
@@ -71,6 +72,7 @@ const spreader = {
 
     },
     place: function (conditions) {
+        Places = [];
         if(!conditions) conditions = conditions = {types: [], address: "" };
         console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
@@ -185,6 +187,7 @@ const spreader = {
 
                 const point = painter.mark(place, index, header, body,
                     footer, details, iconSet, side);
+                Places[index] = point;
                 //if(index == 1000000) console.log(point);
                 if (spreader.letClusterize) {
                     cluster.add(point);

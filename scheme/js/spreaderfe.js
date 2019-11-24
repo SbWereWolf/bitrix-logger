@@ -1,3 +1,4 @@
+let Places = [];
 const spreader = {
     letClusterize: true,
     small: 20,
@@ -11,6 +12,7 @@ const spreader = {
             .toLocaleDateString("ru-RU");
     },
     place: function (conditions) {
+        Places = [];
         if (!conditions) conditions = conditions = {types: [], address: ""};
         console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
@@ -113,6 +115,7 @@ const spreader = {
 
                 const point = painter.mark(place, index, header, body,
                     footer, details, iconSet, side);
+                Places[index] = point;
 
                 if (spreader.letClusterize) {
                     cluster.add(point);
