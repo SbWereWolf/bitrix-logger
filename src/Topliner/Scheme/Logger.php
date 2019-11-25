@@ -257,7 +257,7 @@ class Logger
                 'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
-                'past' => var_export(static::$fields, true),
+                'past' => var_export(static::$properties, true),
                 'present' => var_export($PROPERTY_VALUES, true),
             );
             CIBlockElement::SetPropertyValuesEx($id,
@@ -387,7 +387,7 @@ class Logger
                 'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
-                'past' => var_export(static::$fields, true),
+                'past' => var_export(static::$properties, true),
                 'present' => var_export($PROPERTY_VALUES, true),
             );
             CIBlockElement::SetPropertyValuesEx($id,

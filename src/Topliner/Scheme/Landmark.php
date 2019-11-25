@@ -8,6 +8,7 @@ use Bitrix\Main\ORM\Data\DataManager;
 use Bitrix\Main\ORM\Query\Result;
 use CDatabase;
 use CIBlockElement;
+use CIBlockSectionRights;
 use CModule;
 use Exception;
 use LanguageSpecific\ArrayHandler;
@@ -25,6 +26,8 @@ class Landmark
     const PUBLISH = 'publish';
     const FLUSH = 'flush';
     const RESET = 'reset';
+    const ELEMENT_ADD = 'section_element_bind';
+    const ELEMENT_EDIT = 'element_edit';
     /**
      * @var ArrayHandler
      */
@@ -71,11 +74,16 @@ class Landmark
                     $properties[$key] = $value['VALUE'];
                 }
             }
-            $properties['original'] = $source['ID'];
             $properties[BitrixScheme::PUBLISH_STATUS]
                 = BitrixScheme::APPROVED;
         }
         if (!empty($properties)) {
+            CIBlockElement::SetPropertyValuesEx($source['ID'],
+                $source['IBLOCK_ID'],
+                $properties);
+        }
+        if (!empty($properties)) {
+            $properties['original'] = $source['ID'];
             CIBlockElement::SetPropertyValuesEx($copy,
                 $element['IBLOCK_ID'],
                 $properties, ['NewElement' => true]);
@@ -114,19 +122,30 @@ class Landmark
     public function addNew()
     {
         $output = ['success' => false, 'message' => 'General error'];
+
+        $constSec = BitrixScheme::getConstructs();
+        $isAllow = CIBlockSectionRights::UserHasRightTo(
+            $constSec->getBlock(), $constSec->getSection(),
+            self::ELEMENT_ADD, false);
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+
         /* @var $DB CDatabase */
         global $DB;
 
-        /** @var $dbConn mysqli */
-        $DB->StartTransaction();
+        $constructions = null;
+        if ($isAllow) {
+            $DB->StartTransaction();
 
-        $constructions = (new BitrixReference('ConstructionTypes'))
-            ->get();
+            $constructions = (new BitrixReference('ConstructionTypes'))
+                ->get();
+        }
         $type = '';
-        $title = 'Новая рекламная конструкция';
+        $reference = null;
+        $append = false;
         /* @var $constructions DataManager */
-        if (!$constructions !== null) {
-            $reference = [];
+        if ($constructions !== null) {
             try {
                 $reference = $constructions::getList(array(
                     'select' => array('UF_NAME', 'UF_XML_ID'),
@@ -135,33 +154,39 @@ class Landmark
                             ->int())
                 ));
             } catch (Exception $e) {
-                echo $e->getMessage();
+                $append = true;
+                $output['message'] = $e->getMessage();
             }
+        }
+        $id = 0;
+        if (!empty($reference)) {
+
             /* @var $name Result */
             $record = $reference->Fetch();
             $type = $record['UF_XML_ID'];
             $title = $record['UF_NAME'];
+
+            $date = ConvertTimeStamp(time(), 'FULL');
+
+            $fields = array(
+                'IBLOCK_ID' => $constSec->getBlock(),
+                'IBLOCK_SECTION_ID' => $constSec->getSection(),
+                'ACTIVE_FROM' => $date,
+                'NAME' => $title,
+            );
+
+            $element = new CIBlockElement();
+            $id = $element->Add($fields);
         }
-
-        $constSec = BitrixScheme::getConstructs();
-        $date = ConvertTimeStamp(time(), 'FULL');
-
-        $fields = array(
-            'IBLOCK_ID' => $constSec->getBlock(),
-            'IBLOCK_SECTION_ID' => $constSec->getSection(),
-            'ACTIVE_FROM' => $date,
-            'NAME' => $title,
-        );
-
-        $element = new CIBlockElement();
-        $id = $element->Add($fields);
         $isSuccess = !empty($id);
         $fail = false;
-        if (!$isSuccess && !$fail) {
+        if ($isAllow && !$isSuccess && !$fail) {
             $fail = true;
             $DB->Rollback();
             $details = var_export($fields, true);
-            $output['message'] = "Fail add element : $details";
+            $output['message'] = $append
+                ? $output['message'] . "Fail add element : $details"
+                : "Fail add element : $details";
         }
         $payload = [];
         $address = ValueHandler::asUndefined();
@@ -325,33 +350,47 @@ class Landmark
 
     public function store()
     {
-        /* @var $DB CDatabase */
-        global $DB;
-        $DB->StartTransaction();
+        $output = ['success' => false, 'message' => 'General error'];
 
-        $payload = [
-            'longitude' => $this->parameters->get('x')->double(),
-            'latitude' => $this->parameters->get('y')->double(),
-        ];
+        $constSec = BitrixScheme::getConstructs();
+        $isAllow = CIBlockSectionRights::UserHasRightTo(
+            $constSec->getBlock(), $constSec->getSection(),
+            self::ELEMENT_EDIT, false);
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+
         $address = $this->parameters->get('address');
         $location = $address->str();
+        $payload = [];
         if (!empty($location)) {
             $payload['location'] = $location;
         }
-        $constSec = BitrixScheme::getConstructs();
-        $id = $this->parameters->get('number')->int();
 
-        Logger::$operation = Logger::CHANGE;
-        CIBlockElement::SetPropertyValuesEx($id,
-            $constSec->getBlock(),
-            $payload);
+        $isSuccess = false;
+        if ($isAllow) {
+            $payload['longitude'] = $this->parameters->get('x')->double();
+            $payload['latitude'] = $this->parameters->get('y')->double();
 
-        $DB->Commit();
-        $output = ['success' => true,
-            'message' => 'Success update construct;'];
+            $id = $this->parameters->get('number')->int();
 
-        $isSuccess = $this->writePoints();
-        if (!$isSuccess) {
+            /* @var $DB CDatabase */
+            global $DB;
+            $DB->StartTransaction();
+
+            Logger::$operation = Logger::CHANGE;
+            CIBlockElement::SetPropertyValuesEx($id,
+                $constSec->getBlock(),
+                $payload);
+
+            $DB->Commit();
+            $output = ['success' => true,
+                'message' => 'Success update construct;'];
+
+            $isSuccess = $this->writePoints();
+        }
+
+        if ($isAllow && !$isSuccess) {
             $output['message'] = $output['message']
                 . ' Fail update points :'
                 . $this->getPathToPoints();
@@ -367,26 +406,47 @@ class Landmark
     public function publish()
     {
         $output = ['success' => false, 'message' => 'General error'];
+
+        $isAllow = true;
+        $pubConstructs = BitrixScheme::getPublishedConstructs();
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubConstructs->getBlock(), $pubConstructs->getSection(),
+                self::ELEMENT_ADD, false);
+
+        $pubPermits = BitrixScheme::getPublishedPermits();
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubPermits->getBlock(), $pubPermits->getSection(),
+                self::ELEMENT_ADD, false);
+
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+
         /* @var $DB CDatabase */
         global $DB;
 
         /** @var $dbConn mysqli */
         $DB->StartTransaction();
 
-        $identity = $this->parameters->get('number')->int();
-        $response = CIBlockElement::GetByID($identity);
-
-        $construct = [];
-        $isReadSuccess = !empty($response)
-            && $response->result !== false;
-        if (!$isReadSuccess) {
-            $output['message'] = 'Fail read construction';
+        $identity = 0;
+        $response = null;
+        $isReadSuccess = false;
+        if ($isAllow) {
+            $identity = $this->parameters->get('number')->int();
+            $response = CIBlockElement::GetByID($identity);
+            $isReadSuccess = BitrixOrm::isRequestSuccess($response);
         }
+        if ($isAllow && !$isReadSuccess) {
+            $output['message'] = 'Fail request construction';
+        }
+        $construct = false;
         if ($isReadSuccess) {
             $construct = $response->Fetch();
         }
-        $pubConstructs = BitrixScheme::getPublishedConstructs();
-        $isConstructFound = !empty($construct);
+        $isConstructFound = BitrixOrm::isFetchSuccess($construct);
+        if ($isAllow && $isReadSuccess && !$isConstructFound) {
+            $output['message'] = 'Construction not found';
+        }
         $isExistsChild = false;
         if ($isConstructFound) {
             Logger::$operation = Logger::CHANGE;
@@ -395,8 +455,6 @@ class Landmark
                 [BitrixScheme::PUBLISH_STATUS
                 => BitrixScheme::APPROVED]);
 
-
-            $pubConstructs = BitrixScheme::getPublishedConstructs();
             $filter = ['IBLOCK_ID' => $pubConstructs->getBlock(),
                 'SECTION_ID' => $pubConstructs->getSection(),
                 'PROPERTY_original' => $identity,
@@ -523,8 +581,7 @@ class Landmark
         $publishedPermit = 0;
         $gotPermit = !empty($permit) && $permit !== false;
         if ($gotPermit) {
-            $publishedPermit = static::copyElement($permit,
-                BitrixScheme::getPublishedPermits());
+            $publishedPermit = static::copyElement($permit, $pubPermits);
         }
         if ($gotPermit && empty($publishedPermit)) {
             $output['success'] = false;
@@ -586,12 +643,23 @@ class Landmark
 
     private function flush()
     {
-        $construct = new Construct();
-        $points = $construct->get();
-        $json = json_encode($points);
-        $file = fopen($this->getPathToPoints(), 'w');
-        $isSuccess = $file !== false;
-
+        $constSec = BitrixScheme::getConstructs();
+        $isAllow = CIBlockSectionRights::UserHasRightTo(
+            $constSec->getBlock(), $constSec->getSection(),
+            self::ELEMENT_EDIT, false);
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+        $file = null;
+        $json = '';
+        $isSuccess = false;
+        if ($isAllow) {
+            $construct = new Construct();
+            $points = $construct->get();
+            $json = json_encode($points);
+            $file = fopen($this->getPathToPoints(), 'w');
+            $isSuccess = $file !== false;
+        }
         if ($isSuccess) {
             $isSuccess = fwrite($file, $json) !== false;
             fclose($file);
@@ -602,13 +670,30 @@ class Landmark
 
     private function reset()
     {
-        $permits = BitrixScheme::getPublishedPermits();
-        $constructs = BitrixScheme::getPublishedConstructs();
-        $construct = new Construct($permits, $constructs);
-        $points = $construct->get();
-        $json = json_encode($points);
-        $file = fopen($this->getPathToPublished(), 'w');
-        $isSuccess = $file !== false;
+        $isAllow = true;
+        $pubConstructs = BitrixScheme::getPublishedConstructs();
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubConstructs->getBlock(), $pubConstructs->getSection(),
+                self::ELEMENT_ADD, false);
+
+        $pubPermits = BitrixScheme::getPublishedPermits();
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubPermits->getBlock(), $pubPermits->getSection(),
+                self::ELEMENT_ADD, false);
+
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+        $file = null;
+        $json = '';
+        $isSuccess = false;
+        if ($isAllow) {
+            $construct = new Construct($pubPermits, $pubConstructs);
+            $points = $construct->get();
+            $json = json_encode($points);
+            $file = fopen($this->getPathToPublished(), 'w');
+            $isSuccess = $file !== false;
+        }
 
         if ($isSuccess) {
             $isSuccess = fwrite($file, $json) !== false;
