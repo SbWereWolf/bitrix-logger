@@ -15,12 +15,11 @@ use LanguageSpecific\ValueHandler;
 use mysqli;
 use Topliner\Bitrix\BitrixOrm;
 use Topliner\Bitrix\BitrixReference;
+use Topliner\Bitrix\BitrixSection;
 
 class Landmark
 {
     const SECTION_ID = 'SECTION_ID';
-    const PUBLISHED_CONSTRUCTS = 9;
-    const PUBLISHED_PERMITS = 8;
     const STORE = 'store';
     const ADD_NEW = 'new';
     const PUBLISH = 'publish';
@@ -43,17 +42,19 @@ class Landmark
 
     /**
      * @param array $element
-     * @param $sectionId
+     * @param $section
      * @return int
      */
-    private static function copyElement(array $element, $sectionId)
+    private static function copyElement(array $element,
+                                        BitrixSection $section)
     {
         $source = $element;
         $date = ConvertTimeStamp(time(), 'FULL');
 
-        $element['IBLOCK_SECTION_ID'] = $sectionId;
+        $element['IBLOCK_ID'] = $section->getBlock();
+        $element['IBLOCK_SECTION_ID'] = $section->getSection();
         $element['ACTIVE_FROM'] = $date;
-        $copy = (int)(new CIBlockElement())->Add($element);
+        $copy = (int)((new CIBlockElement())->Add($element));
         $values = [];
         if (!empty($copy)) {
             $filter = ['ID' => $source['ID'],
@@ -376,13 +377,15 @@ class Landmark
         $response = CIBlockElement::GetByID($identity);
 
         $construct = [];
-        $isReadSuccess = !empty($response) && $response->result !== false;
+        $isReadSuccess = !empty($response)
+            && $response->result !== false;
         if (!$isReadSuccess) {
             $output['message'] = 'Fail read construction';
         }
         if ($isReadSuccess) {
             $construct = $response->Fetch();
         }
+        $pubConstructs = BitrixScheme::getPublishedConstructs();
         $isConstructFound = !empty($construct);
         $isExistsChild = false;
         if ($isConstructFound) {
@@ -393,9 +396,9 @@ class Landmark
                 => BitrixScheme::APPROVED]);
 
 
-            $constructs = BitrixScheme::getPublishedConstructs();
-            $filter = ['IBLOCK_ID' => $constructs->getBlock(),
-                'SECTION_ID' => $constructs->getSection(),
+            $pubConstructs = BitrixScheme::getPublishedConstructs();
+            $filter = ['IBLOCK_ID' => $pubConstructs->getBlock(),
+                'SECTION_ID' => $pubConstructs->getSection(),
                 'PROPERTY_original' => $identity,
             ];
             $select = ['ID', 'PROPERTY_permit_of_ad'];
@@ -450,9 +453,14 @@ class Landmark
         $published = 0;
         if ($isConstructFound) {
             $source = $construct;
-            $date = ConvertTimeStamp(time(), 'FULL');
 
-            $construct['IBLOCK_SECTION_ID'] = self::PUBLISHED_CONSTRUCTS;
+            $section = BitrixScheme::getPublishedConstructs();
+            $construct['IBLOCK_ID'] =
+                $section->getBlock();
+            $construct['IBLOCK_SECTION_ID'] =
+                $section->getSection();
+
+            $date = ConvertTimeStamp(time(), 'FULL');
             $construct['ACTIVE_FROM'] = $date;
             $published = (new CIBlockElement())->Add($construct);
         }
@@ -460,7 +468,8 @@ class Landmark
         if ($isConstructFound && !$hasCopy) {
             $output['message'] = !$letAppend
                 ? 'Fail copying of construction;'
-                : $output['message'] . ' Fail copying of construction;';
+                : $output['message']
+                . ' Fail copying of construction;';
             $letAppend = true;
         }
         $values = [];
@@ -468,7 +477,8 @@ class Landmark
             $output['success'] = true;
             $output['message'] = !$letAppend
                 ? 'Success copying of construction;'
-                : $output['message'] . ' Success copying of construction;';
+                : $output['message']
+                . ' Success copying of construction;';
             $output['published'] = $published;
 
             $filter = ['ID' => $source['ID'],
@@ -514,7 +524,7 @@ class Landmark
         $gotPermit = !empty($permit) && $permit !== false;
         if ($gotPermit) {
             $publishedPermit = static::copyElement($permit,
-                self::PUBLISHED_PERMITS);
+                BitrixScheme::getPublishedPermits());
         }
         if ($gotPermit && empty($publishedPermit)) {
             $output['success'] = false;
@@ -531,7 +541,7 @@ class Landmark
         }
         if (!empty($properties)) {
             CIBlockElement::SetPropertyValuesEx($published,
-                $construct['IBLOCK_ID'],
+                $pubConstructs->getBlock(),
                 $properties, ['NewElement' => true]);
         }
 

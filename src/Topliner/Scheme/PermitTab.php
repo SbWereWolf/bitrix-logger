@@ -51,9 +51,27 @@ class PermitTab
 
     function ShowTab($divName, $arArgs, $bVarsFromForm)
     {
-        if ($divName === self::LINKS) {
+        $isEnable = $divName === self::LINKS;
+        $isOrigin = false;
+        if ($isEnable) {
+            $permits = BitrixScheme::getPermits();
+            $isOrigin = (int)($arArgs['IBLOCK']['ID']) ===
+                $permits->getBlock();
+        }
+        $keys = null;
+        if ($isEnable && $isOrigin) {
             $keys = BitrixScheme::getConstructs();
-
+        }
+        $isPublished = false;
+        if ($isEnable && !$isOrigin) {
+            $pubPermits = BitrixScheme::getPublishedPermits();
+            $isPublished = (int)($arArgs['IBLOCK']['ID']) ===
+                $pubPermits->getBlock();
+        }
+        if ($isEnable && $isPublished) {
+            $keys = BitrixScheme::getPublishedConstructs();
+        }
+        if ($isEnable && ($isOrigin || $isPublished)) {
             $identity = $arArgs['ID'];
             $block = $keys->getBlock();
             $type = $arArgs['IBLOCK_TYPE']['ID'];

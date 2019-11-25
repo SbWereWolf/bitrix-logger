@@ -51,13 +51,12 @@ const landmark = {
         myMap.geoObjects.removeAll();
         myMap.geoObjects.add(point);
         $('#new-address').val("");
-        point.events.add('dragend', function(event) {
+        point.events.add('dragend', function () {
             $('#accept')[0].disabled = false;
             const coord = point.geometry.getCoordinates();
             var myGeocoder = ymaps.geocode(coord, {kind: 'house' });
             myGeocoder.then (
                 function(res) {
-                    //window.console.log(res.geoObjects);
                     var street = res.geoObjects.get(0);
                     var name = street.properties.get('name');
                     // Будет выведено «улица Большая Молчановка»,
@@ -73,18 +72,20 @@ const landmark = {
         $('.rk-edit-control').hide();
         $('#new-address-div').show();
         $('#accept').show();
-        $('#decline').show();
-        $('#decline')[0].disabled = false;
-        $('#decline').off('click');
-        $('#decline').one('click', function () {
+        const decline = $('#decline');
+        decline.show();
+        decline[0].disabled = false;
+        decline.off('click');
+        decline.one('click', function () {
             if(!this.disabled) {
                 myMap.geoObjects.remove(point);
                 //point.geometry.setCoordinates([place.y, place.x]);
                 this.disabled = true;
                 $('.rk-edit-control').hide();
                 $('#rk-type').show();
-                $('#add-new').show();
-                $('#add-new')[0].disabled = false;
+                const addNew = $('#add-new');
+                addNew.show();
+                addNew[0].disabled = false;
                 $('#publish').show();
                 landmarkFilter.run();
             }
@@ -149,7 +150,6 @@ const landmark = {
     },
     storePlace:  function () {
         let data = landmark.getCredentials();
-        //window.console.log( placement.current);
         const coords = placement.current.geometry.getCoordinates();
         data.x = coords[1];
         data.y = coords[0];
@@ -161,13 +161,15 @@ const landmark = {
             place.x = data.x;
             place.y = data.y;
         }
-        if($('#new-address-change')[0].checked && $('#new-address').val()) {
-            data.address = $('#new-address').val();
+        const newAddress = $('#new-address');
+        if ($('#new-address-change')[0].checked && newAddress.val()) {
+            data.address = newAddress.val();
             place.location = data.address;
-            $('#new-address').val('');
+            newAddress.val('');
         }
         landmark.block();
-        $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
+        $.post('/scheme/api.php', {data: JSON.stringify(data)},
+            function () {
             landmark.finish();
             landmark.unblock();
         }, 'json');
@@ -184,10 +186,11 @@ const landmark = {
         place.x = data.x;
         place.y = data.y;
         place.construct_area = "";
-        if($('#new-address-change')[0].checked && $('#new-address').val()) {
-            data.address = $('#new-address').val();
+        const newAddress = $('#new-address');
+        if ($('#new-address-change')[0].checked && newAddress.val()) {
+            data.address = newAddress.val();
             place.location = data.address;
-            $('#new-address').val('');
+            newAddress.val('');
         }
         landmark.block();
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
@@ -203,8 +206,6 @@ const landmark = {
         let data = landmark.getCredentials();
         data.call = 'publish';
         data.number = placement.current.properties.get("info").place_number;
-
-        window.console.log(placement.current.properties.get('info'));
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             console.log(result);

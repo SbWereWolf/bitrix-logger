@@ -14,14 +14,12 @@ const spreader = {
     place: function (conditions) {
         Places = [];
         if (!conditions) conditions = conditions = {types: [], address: ""};
-        console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
             cluster = new ymaps.Clusterer({maxZoom: 17});
             cluster.balloon.events.add('open', function (e) {
-                //alert(e);
             })
         }
         if (!spreader.letClusterize) {
