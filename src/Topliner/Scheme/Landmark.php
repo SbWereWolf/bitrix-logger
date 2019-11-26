@@ -78,9 +78,12 @@ class Landmark
                 = BitrixScheme::APPROVED;
         }
         if (!empty($properties)) {
+            $currentOp = Logger::$operation;
+            Logger::$operation = Logger::CHANGE;
             CIBlockElement::SetPropertyValuesEx($source['ID'],
                 $source['IBLOCK_ID'],
                 $properties);
+            Logger::$operation = $currentOp;
         }
         if (!empty($properties)) {
             $properties['original'] = $source['ID'];
@@ -214,6 +217,8 @@ class Landmark
         if ($isSuccess) {
             $output['success'] = true;
             $output['message'] = 'Success add new point;';
+
+            $payload[BitrixScheme::PUBLISH_STATUS] = BitrixScheme::DRAFT;
 
             CIBlockElement::SetPropertyValuesEx($id,
                 $constSec->getBlock(),
@@ -371,6 +376,7 @@ class Landmark
         if ($isAllow) {
             $payload['longitude'] = $this->parameters->get('x')->double();
             $payload['latitude'] = $this->parameters->get('y')->double();
+            $payload[BitrixScheme::PUBLISH_STATUS] = BitrixScheme::DRAFT;
 
             $id = $this->parameters->get('number')->int();
 
