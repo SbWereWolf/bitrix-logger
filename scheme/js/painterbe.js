@@ -49,10 +49,28 @@ const painter = {
             + "<dl class=\"rk-profile\">"
             + "<dt>" + captions.place_location + "</dt>"
             + "<dd>" + address + "</dd>"
-            + "<dt>" + captions.place_construct + "</dt>"
-            + "<dd>" + info.place_construct + "</dd>"
-            + "<dt>" + captions.place_construct_area + "</dt>"
-            + "<dd>" + info.place_construct_area + "</dd>"
+            + "<dt>" + captions.place_remark + "</dt>"
+            + "<dd>" + info.place_remark + "</dd>"
+            + "<dt>" + captions.place_x + "</dt>"
+            + "<dd>" + info.place_x + "</dd>"
+            + "<dt>" + captions.place_y + "</dt>"
+            + "<dd>" + info.place_y + "</dd>"
+            + '<dt>' + captions.place_number_of_sides + '</dt>'
+            + '<dd>' + info.place_number_of_sides + '</dd>'
+            + '<dt>' + captions.place_construct_area+ '</dt>'
+            + '<dd>' + info.place_construct_area + '</dd>'
+            + '<dt>' + captions.place_field_type+ '</dt>'
+            + '<dd>' + info.place_field_type + '</dd>'
+            + '<dt>' + captions.place_fields_number+ '</dt>'
+            + '<dd>' + info.place_fields_number + '</dd>'
+            + '<dt>' + captions.place_construct_height+ '</dt>'
+            + '<dd>' + info.place_construct_height + '</dd>'
+            + '<dt>' + captions.place_construct_width+ '</dt>'
+            + '<dd>' + info.place_construct_width + '</dd>'
+            + '<dt>' + captions.place_fields_area+ '</dt>'
+            + '<dd>' + info.place_fields_area + '</dd>'
+            + '<dt>' + captions.place_lightening+ '</dt>'
+            + '<dd>' + info.place_lightening + '</dd>'
         ;
 
         if (typeof info.place_permit_number
@@ -69,6 +87,10 @@ const painter = {
                 + "<dd>" + info.place_permit_finish+ "</dd>"
                 + "<dt>" + captions.place_permit_distributor+ "</dt>"
                 + "<dd>" + info.place_permit_distributor + "</dd>"
+                + "<dt>" + captions.place_permit_contract+ "</dt>"
+                + "<dd>" + info.place_permit_contract + "</dd>"
+                + "<dt>" + captions.place_number+ "</dt>"
+                + "<dd>" + info.place_number + "</dd>"
             ;
         }
         content = content + "</dl>";
