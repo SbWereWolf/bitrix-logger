@@ -207,6 +207,10 @@ const landmark = {
                 points[result.id] = place;
                 landmark.finish();
                 landmark.unblock();
+            } else {
+                alert('Во время сохранения произошла ошибка: ' + result.message)
+                landmark.finish();
+                landmark.unblock();
             }
         }, 'json');
     },
@@ -217,7 +221,7 @@ const landmark = {
 
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
             //console.log(result);
-            if(result.success) alert('Опуликовано');
+            if(result.success) alert('Опулибковано');
             landmark.unblock();
         }, 'json');
     },
