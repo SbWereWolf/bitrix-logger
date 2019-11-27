@@ -104,6 +104,7 @@ const landmark = {
     constructTypesId: "#construct-types",
     flushId: "#flush",
     flush: function () {
+        $('#address').val("");
         let data = landmark.getCredentials();
         data.call = 'flush';
         landmark.block();
