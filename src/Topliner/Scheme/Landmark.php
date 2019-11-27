@@ -231,7 +231,7 @@ class Landmark
             $output['message'] = $output['message']
                 . ' Success update points;';
         }
-        if (!$isSuccess && !$fail) {
+        if ($isAllow && !$isSuccess && !$fail) {
             /** @noinspection PhpUnusedLocalVariableInspection */
             $fail = true;
             $output['message'] = $output['message']
