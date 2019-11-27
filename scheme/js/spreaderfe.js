@@ -14,7 +14,6 @@ const spreader = {
     place: function (conditions) {
         Places = [];
         if (!conditions) conditions = conditions = {types: [], address: ""};
-        console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {

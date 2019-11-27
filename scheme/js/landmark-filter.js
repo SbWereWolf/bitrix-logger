@@ -21,7 +21,6 @@ landmarkFilter = {
         const conditions = landmarkFilter.define();
 
         myMap.geoObjects.removeAll();
-        //console.log(conditions);
         spreader.place(conditions);
 
         const address = conditions.address;
