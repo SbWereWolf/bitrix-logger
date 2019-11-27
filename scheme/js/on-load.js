@@ -1,4 +1,8 @@
 let points;
+let randStr = function () {
+
+    return '_' + Math.random().toString(36).substr(2, 9);
+};
 jQuery(function ($) {
     const lowVision = Cookies.get("lwversion");
     if (typeof lowVision !== typeof undefined) {
@@ -10,7 +14,7 @@ jQuery(function ($) {
     });
     iconSetup.compose();
     const waitFor = 500;
-    $.get('/scheme/js/points.json', function(data) {
+    $.get('/scheme/js/points.json?' + randStr(), function(data) {
         points = data;
         settings.setup();
 

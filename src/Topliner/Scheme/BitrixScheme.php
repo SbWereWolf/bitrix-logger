@@ -34,7 +34,7 @@ class BitrixScheme
      */
     public static function getPublishedConstructs()
     {
-        return new BitrixSection(8, 9, 'Пуб. РК');
+        return new BitrixSection(11, 14, 'Пуб. РК');
     }
 
     /**
@@ -42,7 +42,7 @@ class BitrixScheme
      */
     public static function getPublishedPermits()
     {
-        return new BitrixSection(7, 8, 'Пуб. Разрешние');
+        return new BitrixSection(10, 13, 'Пуб. Разрешние');
     }
 
     /**

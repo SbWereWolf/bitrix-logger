@@ -423,6 +423,26 @@ html, body {
         -webkit-transform: rotate(360deg);
         transform: rotate(360deg); } }
 
+.bx-auth noindex {
+    display: none;
+
+}
+.bx-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.bx-auth .bx-auth-note {
+   margin-top: 100px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.bx-auth-table {
+    width: 400px;
+}
+
 
 
 

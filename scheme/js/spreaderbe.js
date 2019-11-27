@@ -1,3 +1,4 @@
+let Places = [];
 const spreader = {
     letClusterize: true,
     small: 20,
@@ -25,15 +26,15 @@ const spreader = {
         placement.current = point;
         point.properties.set('info', {number: index});
         myMap.geoObjects.add(point);
-        $('#new-address').val("");
-        if(place.address) $('#new-address').val(place.address);
-        point.events.add('dragend', function(event) {
+        const newAddress = $('#new-address');
+        newAddress.val("");
+        if (place.address) newAddress.val(place.address);
+        point.events.add('dragend', function () {
             landmark.action = landmark.move;
             const coord = point.geometry.getCoordinates();
             var myGeocoder = ymaps.geocode(coord, {kind: 'house' });
             myGeocoder.then (
                 function(res) {
-                    //window.console.log(res.geoObjects);
                     var street = res.geoObjects.get(0);
                     var name = street.properties.get('name');
                     // Будет выведено «улица Большая Молчановка»,
@@ -50,10 +51,11 @@ const spreader = {
         $('.rk-edit-control').hide();
         $('#accept').show();
         $('#new-address-div').show();
-        $('#decline').show();
-        $('#decline')[0].disabled = false;
-        $('#decline').off('click');
-        $('#decline').one('click', function () {
+        const decline = $('#decline');
+        decline.show();
+        decline[0].disabled = false;
+        decline.off('click');
+        decline.one('click', function () {
             if(!this.disabled) {
                 myMap.geoObjects.remove(point);
                 //point.geometry.setCoordinates([place.y, place.x]);
@@ -62,6 +64,8 @@ const spreader = {
                 $('#rk-type').show();
                 $('#add-new').show();
                 $('#publish').show();
+                $('#flush').show();
+                $('#address').val("");
                 landmarkFilter.run();
                 placement.current = {};
             }
@@ -71,22 +75,20 @@ const spreader = {
 
     },
     place: function (conditions) {
+        Places = [];
         if(!conditions) conditions = conditions = {types: [], address: "" };
-        console.log(conditions);
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
             cluster = new ymaps.Clusterer({maxZoom:17});
             cluster.balloon.events.add('open', function(e) {
-                //alert(e);
             })
         }
         if (!spreader.letClusterize) {
             spreader.side = spreader.small;
         }
         $.each(points, function (index, place) {
-            //console.log(index);
             const allow = !doSelecting
                 || (conditions.types.indexOf(place.construct) != -1);
 
@@ -94,7 +96,6 @@ const spreader = {
 
             let header = "";
             let body = "";
-            const panorama = spreader.compose(place.x, place.y);
 
             let footer = "";
             if(typeof place.name != "undefined") place.name += "";
@@ -112,26 +113,27 @@ const spreader = {
             }
             if (allow) {
                 header = '<div class="ballon-header">' + name+ ', ' + index+ '</div>';
-                body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0px">'
-                    + '<div class="col-6 image" style="padding-right:0px;">'
-                    + '<img src="' + image+ '" class="img-thumbnail rounded-0 "/>'
+                body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0">'
+                    + '<div class="col-6 image" style="padding-right:0;">'
+                    + '<img src="' + image + '" alt="construct photo" ' +
+                    'class="img-thumbnail rounded-0 "/>'
                     + '</div><div class="col-6">'
                     + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location+ '</strong></div>'
                     + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name+ '</strong></div></div></div>';
                     footer = ''
-                    + '<div class="row" style="margin-right:-15px; margin-left:0px""><div class="col-3" style="padding-right:0px;">'
+                        + '<div class="row" style="margin-right:-15px; margin-left:0""><div class="col-3" style="padding-right:0;">'
                     + '<a class="btn btn-outline-primary btn-sm btn-block"'
                     + ' href="#" onclick="painter.setPanorama(' + index+ '); return false;">'
-                    + 'Панорама</a></div><div class="col-3" style="margin-left:0px;padding-right:0px;">'
+                        + 'Панорама</a></div><div class="col-3" style="margin-left:0;padding-right:0;">'
                     + '<a class="btn btn-primary btn-sm btn-block" '
                     + ' target="_blank"'
                     + ' href="#" onclick="painter.setProfileByIndex(' + index+ ');return false">'
                     + 'Подробно</a></div>' +
-                        '<div class="col-3" style="margin-left:0px;padding-right:0px;">' +
+                        '<div class="col-3" style="margin-left:0;padding-right:0;">' +
                         '<a class="btn btn-primary btn-sm btn-block" ' +
                         ' target="_blank" href="' + constructEdit + index + '">' +
                         'Редактoр</a></div>' +
-                        '<div class="col-3" style="margin-left:0px;">' +
+                        '<div class="col-3" style="margin-left:0;">' +
                         '<a class="btn btn-primary btn-sm btn-block" ' +
                         ' target="_blank" href="#" onclick="spreader.moveByIndex(' + index+ ');return false">' +
                         'Двигать</a></div>' +
@@ -179,13 +181,12 @@ const spreader = {
                     placeInfo.place_permit_distributor = place.permit.distributor;
                     placeInfo.place_permit_contract = place.permit.contract;
                 }
-                //const details = Object.assign(placeInfo, permitInfo);
                 details = placeInfo;
                 const side = Number(spreader.side);
 
                 const point = painter.mark(place, index, header, body,
                     footer, details, iconSet, side);
-                //if(index == 1000000) console.log(point);
+                Places[index] = point;
                 if (spreader.letClusterize) {
                     cluster.add(point);
                 }

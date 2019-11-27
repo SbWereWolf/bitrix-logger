@@ -8,6 +8,8 @@ use CIBlockElement;
 use CIBlockProperty;
 use CUser;
 use LanguageSpecific\ArrayHandler;
+use Topliner\Bitrix\BitrixOrm;
+use Topliner\Bitrix\BitrixSection;
 
 class Logger
 {
@@ -255,7 +257,7 @@ class Logger
                 'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
-                'past' => var_export(static::$fields, true),
+                'past' => var_export(static::$properties, true),
                 'present' => var_export($PROPERTY_VALUES, true),
             );
             CIBlockElement::SetPropertyValuesEx($id,
@@ -385,7 +387,7 @@ class Logger
                 'action' => static::$operation,
                 'subject_id' => $itemId,
                 'remark' => $remark,
-                'past' => var_export(static::$fields, true),
+                'past' => var_export(static::$properties, true),
                 'present' => var_export($PROPERTY_VALUES, true),
             );
             CIBlockElement::SetPropertyValuesEx($id,
@@ -607,7 +609,7 @@ class Logger
             array(), array('ID' => $id), false, false,
             array('IBLOCK_ID', 'IBLOCK_SECTION_ID'));
         $element = ['IBLOCK_ID' => 0, 'IBLOCK_SECTION_ID' => 0];
-        $isExists = $response !== false;
+        $isExists = BitrixOrm::isRequestSuccess($response);;
         if ($isExists) {
             $element = $response->Fetch();
         }
@@ -647,11 +649,11 @@ class Logger
     {
         $blockId = $fields->get('IBLOCK_ID')->int();
         $sectionId = 0;
-        $has = $fields->pull('IBLOCK_SECTION')->isUndefined();
-        if ($has) {
+        $has = !($fields->pull('IBLOCK_SECTION')->isUndefined());
+        if (!$has) {
             $sectionId = $fields->get('IBLOCK_SECTION_ID')->int();
         }
-        if (!$has) {
+        if ($has) {
             $sectionId = $fields->pull('IBLOCK_SECTION')
                 ->get()->int();
         }
