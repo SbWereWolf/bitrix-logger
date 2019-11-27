@@ -1,3 +1,4 @@
+let lastsearched;
 landmarkFilter = {
     searchId: "#show",
     define: function () {
@@ -17,19 +18,33 @@ landmarkFilter = {
         return filter;
     },
     run: function () {
-
+        landmark.block();
         const conditions = landmarkFilter.define();
-
-        myMap.geoObjects.removeAll();
-        spreader.place(conditions);
-
+        //console.log(conditions);
+        //spreader.place(conditions);
         const address = conditions.address;
         if (address !== "") {
+            if(lastsearched && lastsearched.address == address) {
+                myMap.geoObjects.removeAll();
+                spreader.place(conditions);
+                landmark.unblock();
+                return;
+            }
+            if(address.match(/^\d+$/)) {
+                if(Places[address]) {
+                    const p = points[address];
+                    myMap.setCenter([p.y,p.x], 17);
+                    Places[address].balloon.open();
+                    landmark.unblock();
+                    return;
+                }
+            }
             ymaps.geocode(address, {
                 boundedBy: [[y, x], [yy, xx]],
                 strictBounds: true,
                 results: 1
             }).then(function (res) {
+                landmark.unblock();
                 const firstGeoObject = res.geoObjects.get(0),
                     coords = firstGeoObject.geometry.getCoordinates(),
                     bounds = firstGeoObject.properties.get('boundedBy');
@@ -37,7 +52,14 @@ landmarkFilter = {
                 myMap.setBounds(bounds, {
                     checkZoomRange: true
                 });
+                lastsearched = {address:conditions.address, coords:coords, bounds:bounds };
+                //spreader.place(conditions);
+                //landmark.unblock();
             });
+        } else {
+            myMap.geoObjects.removeAll();
+            spreader.place(conditions);
+            landmark.unblock();
         }
     }
 };

@@ -13,8 +13,8 @@
  */
 
 ;(function() {
-/*jshint eqeqeq:false curly:false latedef:false */
-"use strict";
+	/*jshint eqeqeq:false curly:false latedef:false */
+	"use strict";
 
 	function setup($) {
 		$.fn._fadeIn = $.fn.fadeIn;
@@ -212,8 +212,8 @@
 			// page blocking
 			focusInput: true,
 
-            // elements that can receive focus
-            focusableElements: ':input:enabled:visible',
+			// elements that can receive focus
+			focusableElements: ':input:enabled:visible',
 
 			// suppresses the use of overlay styles on FF/Linux (due to performance issues with opacity)
 			// no longer needed in 2012
@@ -555,9 +555,9 @@
 			else
 				$(document).unbind(events, handler);
 
-		// former impl...
-		//		var $e = $('a,:input');
-		//		b ? $e.bind(events, opts, handler) : $e.unbind(events, handler);
+			// former impl...
+			//		var $e = $('a,:input');
+			//		b ? $e.bind(events, opts, handler) : $e.unbind(events, handler);
 		}
 
 		// event handler to suppress keyboard/mouse events when blocking

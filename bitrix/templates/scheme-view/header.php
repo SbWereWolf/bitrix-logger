@@ -39,6 +39,7 @@
     <script type="text/javascript" src="/scheme/js/jquery.blockUI.js"></script>
     <script type="text/javascript" src="/scheme/js/on-load.js"></script>
     <meta name="viewport" content="width=1240">
-    <title>Схема рекламы</title>
+    <title>Интерактивная схема размещения рекламных конструкций на территории города Челябинска.</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
 </head>
 <body class="height100">

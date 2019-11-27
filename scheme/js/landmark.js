@@ -214,10 +214,10 @@ const landmark = {
         data.call = 'publish';
         data.number = placement.current.properties.get("info").place_number;
 
-        window.console.log(placement.current.properties.get('info'));
-
         $.post('/scheme/api.php', {data:JSON.stringify(data)}, function(result) {
-            console.log(result);
+            //console.log(result);
+            if(result.success) alert('Опуликовано');
+            landmark.unblock();
         }, 'json');
     },
     acceptAction: function () {
@@ -249,7 +249,9 @@ const landmark = {
                 '-moz-border-radius': '5px',
                 opacity: 1,
                 color: '#204d74',
-        } }
+        },
+                fadeIn:0,
+            }
     );
     },
     unblock: function() {
