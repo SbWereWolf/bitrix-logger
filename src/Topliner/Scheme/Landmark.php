@@ -13,21 +13,18 @@ use CModule;
 use Exception;
 use LanguageSpecific\ArrayHandler;
 use LanguageSpecific\ValueHandler;
-use mysqli;
-use Topliner\Bitrix\BitrixOrm;
+use Topliner\Bitrix\BitrixPermission;
 use Topliner\Bitrix\BitrixReference;
-use Topliner\Bitrix\BitrixSection;
+use Topliner\Bitrix\InfoBlock;
 
 class Landmark
 {
-    const SECTION_ID = 'SECTION_ID';
     const STORE = 'store';
     const ADD_NEW = 'new';
     const PUBLISH = 'publish';
     const FLUSH = 'flush';
-    const RESET = 'reset';
-    const ELEMENT_ADD = 'section_element_bind';
-    const ELEMENT_EDIT = 'element_edit';
+    const RECOMPILE = 'recompile';
+    const RELEASE = 'release';
     /**
      * @var ArrayHandler
      */
@@ -43,61 +40,10 @@ class Landmark
         $this->parameters = $parameters;
     }
 
-    /**
-     * @param array $element
-     * @param $section
-     * @return int
-     */
-    private static function copyElement(array $element,
-                                        BitrixSection $section)
-    {
-        $source = $element;
-        $date = ConvertTimeStamp(time(), 'FULL');
-
-        $element['IBLOCK_ID'] = $section->getBlock();
-        $element['IBLOCK_SECTION_ID'] = $section->getSection();
-        $element['ACTIVE_FROM'] = $date;
-        $copy = (int)((new CIBlockElement())->Add($element));
-        $values = [];
-        if (!empty($copy)) {
-            $filter = ['ID' => $source['ID'],
-                self::SECTION_ID => $source['IBLOCK_SECTION_ID']];
-            CIBlockElement::GetPropertyValuesArray($values,
-                $source['IBLOCK_ID'], $filter, [],
-                ['GET_RAW_DATA' => 'Y']);
-        }
-        $properties = [];
-        if (!empty($values)) {
-            $values = current($values);
-            foreach ($values as $key => $value) {
-                if (!empty($value['VALUE'])) {
-                    $properties[$key] = $value['VALUE'];
-                }
-            }
-            $properties[BitrixScheme::PUBLISH_STATUS]
-                = BitrixScheme::APPROVED;
-        }
-        if (!empty($properties)) {
-            $currentOp = Logger::$operation;
-            Logger::$operation = Logger::CHANGE;
-            CIBlockElement::SetPropertyValuesEx($source['ID'],
-                $source['IBLOCK_ID'],
-                $properties);
-            Logger::$operation = $currentOp;
-        }
-        if (!empty($properties)) {
-            $properties['original'] = $source['ID'];
-            CIBlockElement::SetPropertyValuesEx($copy,
-                $element['IBLOCK_ID'],
-                $properties, ['NewElement' => true]);
-        }
-        return $copy;
-    }
-
     public function process()
     {
         $output = ['success' => false, 'message' => 'Method not found'];
-        CModule::IncludeModule(Construct::IBLOCK);
+        CModule::IncludeModule(InfoBlock::IBLOCK);
         CModule::IncludeModule('highloadblock');
 
         $call = $this->parameters->get('call')->str();
@@ -109,13 +55,16 @@ class Landmark
                 $output = $this->store();
                 break;
             case self::PUBLISH:
-                $output = $this->publish();
+                $output = $this->publishOne();
+                break;
+            case self::RELEASE:
+                $output = $this->publishAll();
                 break;
             case self::FLUSH:
                 $output = $this->flush();
                 break;
-            case self::RESET:
-                $output = $this->reset();
+            case self::RECOMPILE:
+                $output = $this->recompile();
                 break;
         }
 
@@ -129,7 +78,7 @@ class Landmark
         $constSec = BitrixScheme::getConstructs();
         $isAllow = CIBlockSectionRights::UserHasRightTo(
             $constSec->getBlock(), $constSec->getSection(),
-            self::ELEMENT_ADD, false);
+            BitrixPermission::ELEMENT_ADD, false);
         if (!$isAllow) {
             $output['message'] = 'Forbidden, not enough permission;';
         }
@@ -162,6 +111,7 @@ class Landmark
             }
         }
         $id = 0;
+        $fields = [];
         if (!empty($reference)) {
 
             /* @var $name Result */
@@ -360,7 +310,7 @@ class Landmark
         $constSec = BitrixScheme::getConstructs();
         $isAllow = CIBlockSectionRights::UserHasRightTo(
             $constSec->getBlock(), $constSec->getSection(),
-            self::ELEMENT_EDIT, false);
+            BitrixPermission::ELEMENT_EDIT, false);
         if (!$isAllow) {
             $output['message'] = 'Forbidden, not enough permission;';
         }
@@ -409,21 +359,11 @@ class Landmark
         return $output;
     }
 
-    public function publish()
+    public function publishOne()
     {
         $output = ['success' => false, 'message' => 'General error'];
 
-        $isAllow = true;
-        $pubConstructs = BitrixScheme::getPublishedConstructs();
-        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
-                $pubConstructs->getBlock(), $pubConstructs->getSection(),
-                self::ELEMENT_ADD, false);
-
-        $pubPermits = BitrixScheme::getPublishedPermits();
-        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
-                $pubPermits->getBlock(), $pubPermits->getSection(),
-                self::ELEMENT_ADD, false);
-
+        $isAllow = $this->mayPublish();
         if (!$isAllow) {
             $output['message'] = 'Forbidden, not enough permission;';
         }
@@ -431,185 +371,16 @@ class Landmark
         /* @var $DB CDatabase */
         global $DB;
 
-        /** @var $dbConn mysqli */
-        $DB->StartTransaction();
-
-        $identity = 0;
-        $response = null;
-        $isReadSuccess = false;
+        $identity = $this->parameters->get('number')->int();
+        $isSuccess = false;
         if ($isAllow) {
-            $identity = $this->parameters->get('number')->int();
-            $response = CIBlockElement::GetByID($identity);
-            $isReadSuccess = BitrixOrm::isRequestSuccess($response);
-        }
-        if ($isAllow && !$isReadSuccess) {
-            $output['message'] = 'Fail request construction';
-        }
-        $construct = false;
-        if ($isReadSuccess) {
-            $construct = $response->Fetch();
-        }
-        $isConstructFound = BitrixOrm::isFetchSuccess($construct);
-        if ($isAllow && $isReadSuccess && !$isConstructFound) {
-            $output['message'] = 'Construction not found';
-        }
-        $isExistsChild = false;
-        if ($isConstructFound) {
-            Logger::$operation = Logger::CHANGE;
-            CIBlockElement::SetPropertyValuesEx(
-                $identity, $construct['IBLOCK_ID'],
-                [BitrixScheme::PUBLISH_STATUS
-                => BitrixScheme::APPROVED]);
-
-            $filter = ['IBLOCK_ID' => $pubConstructs->getBlock(),
-                'SECTION_ID' => $pubConstructs->getSection(),
-                'PROPERTY_original' => $identity,
-            ];
-            $select = ['ID', 'PROPERTY_permit_of_ad'];
-            $response = CIBlockElement::GetList([], $filter,
-                false, false, $select);
-            $isExistsChild = BitrixOrm::isRequestSuccess($response);
-        }
-        $child = false;
-        if ($isExistsChild) {
-            $child = $response->Fetch();
-        }
-        $gotChild = BitrixOrm::isFetchSuccess($child);
-        $childId = 0;
-        $childPermit = 0;
-        $gotPublicPermit = false;
-        if ($gotChild) {
-            $childId = $child['ID'];
-            $childPermit = $child['PROPERTY_PERMIT_OF_AD_VALUE'];
-            $gotPublicPermit = !empty($childPermit);
-        }
-        $isSuccessDelete = false;
-        if ($gotPublicPermit) {
-            $isSuccessDelete = CIBlockElement::Delete($childPermit);
-        }
-        $letAppend = false;
-        if ($gotPublicPermit && !$isSuccessDelete) {
-            $output['message'] = 'Fail delete published permit;';
-            $letAppend = true;
-        }
-        if ($gotPublicPermit && $isSuccessDelete) {
-            $output['message'] = 'Success delete published permit;';
-            $letAppend = true;
-        }
-        if ($gotChild) {
-            $isSuccessDelete = CIBlockElement::Delete($childId);
-        }
-        if ($gotChild && !$isSuccessDelete) {
-            $output['message'] = !$letAppend
-                ? 'Fail delete published permit;'
-                : $output['message']
-                . ' Fail delete published construction;';
-            $letAppend = true;
-        }
-        if ($gotChild && $isSuccessDelete) {
-            $output['message'] = !$letAppend
-                ? 'Success delete published permit;'
-                : $output['message']
-                . ' Success delete published construction;';
-            $letAppend = true;
-        }
-        $source = [];
-        $published = 0;
-        if ($isConstructFound) {
-            $source = $construct;
-
-            $section = BitrixScheme::getPublishedConstructs();
-            $construct['IBLOCK_ID'] =
-                $section->getBlock();
-            $construct['IBLOCK_SECTION_ID'] =
-                $section->getSection();
-
-            $date = ConvertTimeStamp(time(), 'FULL');
-            $construct['ACTIVE_FROM'] = $date;
-            $published = (new CIBlockElement())->Add($construct);
-        }
-        $hasCopy = !empty($published);
-        if ($isConstructFound && !$hasCopy) {
-            $output['message'] = !$letAppend
-                ? 'Fail copying of construction;'
-                : $output['message']
-                . ' Fail copying of construction;';
-            $letAppend = true;
-        }
-        $values = [];
-        if ($hasCopy) {
-            $output['success'] = true;
-            $output['message'] = !$letAppend
-                ? 'Success copying of construction;'
-                : $output['message']
-                . ' Success copying of construction;';
-            $output['published'] = $published;
-
-            $filter = ['ID' => $source['ID'],
-                self::SECTION_ID => $source['IBLOCK_SECTION_ID']];
-            CIBlockElement::GetPropertyValuesArray($values,
-                $source['IBLOCK_ID'], $filter, [],
-                ['GET_RAW_DATA' => 'Y']);
-        }
-        $gotValues = !empty($values);
-        if ($hasCopy && !$gotValues) {
-            $output['message'] = $output['message']
-                . ' Fail read construction properties';
-        }
-        $properties = [];
-        if ($gotValues) {
-            $values = current($values);
-            foreach ($values as $key => $value) {
-                if (!empty($value['VALUE'])) {
-                    $properties[$key] = $value['VALUE'];
-                }
-            }
-            $properties[BitrixScheme::PUBLISH_STATUS]
-                = BitrixScheme::APPROVED;
-            $properties['original'] = $identity;
-        }
-        $answer = null;
-        $hasPermit = !empty($properties)
-            && !empty($properties['permit_of_ad']);
-        if ($hasPermit) {
-            $permitId = (int)$properties['permit_of_ad'];
-            $answer = CIBlockElement::GetByID($permitId);
-        }
-        $hasAnswer = !empty($answer) && $answer->result !== false;
-        if ($hasPermit && !$hasAnswer) {
-            $output['message'] = $output['message']
-                . 'Fail read permit';
-        }
-        $permit = [];
-        if ($hasAnswer) {
-            $permit = $answer->Fetch();
-        }
-        $publishedPermit = 0;
-        $gotPermit = !empty($permit) && $permit !== false;
-        if ($gotPermit) {
-            $publishedPermit = static::copyElement($permit, $pubPermits);
-        }
-        if ($gotPermit && empty($publishedPermit)) {
-            $output['success'] = false;
-            $output['message'] = $output['message']
-                . 'Fail copying of permit';
-        }
-        if ($gotPermit && !empty($publishedPermit)) {
-            $output['message'] = $output['message'] .
-                ' Success copying of permit';
-            $output['withPermit'] = $publishedPermit;
-        }
-        if ($gotPermit && !empty($publishedPermit)) {
-            $properties['permit_of_ad'] = $publishedPermit;
-        }
-        if (!empty($properties)) {
-            CIBlockElement::SetPropertyValuesEx($published,
-                $pubConstructs->getBlock(),
-                $properties, ['NewElement' => true]);
+            $DB->StartTransaction();
+            $publisher = new Publisher();
+            $output = $publisher->publishOne($identity);
+            $isSuccess = $output['success'];
         }
 
-        $isSuccess = $output['success'];
-        if (!$isSuccess) {
+        if ($isAllow && !$isSuccess) {
             $DB->Rollback();
         }
         $writeSuccess = false;
@@ -618,12 +389,52 @@ class Landmark
             $writeSuccess = $this->writePublished();
         }
         if ($isSuccess && !$writeSuccess) {
-            $output['message'] = $output['message'] .
-                ' Fail update published';
+            $output['message'] = $output['message']
+                . ' Fail update published';
         }
         if ($isSuccess && $writeSuccess) {
-            $output['message'] = $output['message'] .
-                ' Success update published';
+            $output['message'] = $output['message']
+                . ' Success update published';
+        }
+
+        return $output;
+    }
+
+    public function publishAll()
+    {
+        $output = ['success' => false, 'message' => 'General error'];
+
+        $isAllow = $this->mayPublish();
+        if (!$isAllow) {
+            $output['message'] = 'Forbidden, not enough permission;';
+        }
+
+        /* @var $DB CDatabase */
+        global $DB;
+
+        $isSuccess = false;
+        if ($isAllow) {
+            $DB->StartTransaction();
+            $publisher = new Publisher();
+            $output = $publisher->publishAll();
+            $isSuccess = $output['success'];
+        }
+
+        if ($isAllow && !$isSuccess) {
+            $DB->Rollback();
+        }
+        $writeSuccess = false;
+        if ($isSuccess) {
+            $DB->Commit();
+            $writeSuccess = $this->recompile();
+        }
+        if ($isSuccess && !$writeSuccess) {
+            $output['message'] = $output['message']
+                . ' Fail update published;';
+        }
+        if ($isSuccess && $writeSuccess) {
+            $output['message'] = $output['message']
+                . ' Success update published;';
         }
 
         return $output;
@@ -652,7 +463,7 @@ class Landmark
         $constSec = BitrixScheme::getConstructs();
         $isAllow = CIBlockSectionRights::UserHasRightTo(
             $constSec->getBlock(), $constSec->getSection(),
-            self::ELEMENT_EDIT, false);
+            BitrixPermission::ELEMENT_EDIT, false);
         if (!$isAllow) {
             $output['message'] = 'Forbidden, not enough permission;';
         }
@@ -674,19 +485,9 @@ class Landmark
         return ['success' => $isSuccess];
     }
 
-    private function reset()
+    private function recompile()
     {
-        $isAllow = true;
-        $pubConstructs = BitrixScheme::getPublishedConstructs();
-        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
-                $pubConstructs->getBlock(), $pubConstructs->getSection(),
-                self::ELEMENT_ADD, false);
-
-        $pubPermits = BitrixScheme::getPublishedPermits();
-        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
-                $pubPermits->getBlock(), $pubPermits->getSection(),
-                self::ELEMENT_ADD, false);
-
+        $isAllow = $this->mayPublish();
         if (!$isAllow) {
             $output['message'] = 'Forbidden, not enough permission;';
         }
@@ -694,6 +495,8 @@ class Landmark
         $json = '';
         $isSuccess = false;
         if ($isAllow) {
+            $pubConstructs = BitrixScheme::getPublishedConstructs();
+            $pubPermits = BitrixScheme::getPublishedPermits();
             $construct = new Construct($pubPermits, $pubConstructs);
             $points = $construct->get();
             $json = json_encode($points);
@@ -707,6 +510,25 @@ class Landmark
         }
 
         return ['success' => $isSuccess];
+    }
+
+    /**
+     * @return bool
+     */
+    private function mayPublish()
+    {
+        $pubConstructs = BitrixScheme::getPublishedConstructs();
+        $pubPermits = BitrixScheme::getPublishedPermits();
+
+        $isAllow = true;
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubConstructs->getBlock(), $pubConstructs->getSection(),
+                BitrixPermission::ELEMENT_ADD, false);
+        $isAllow = $isAllow && CIBlockSectionRights::UserHasRightTo(
+                $pubPermits->getBlock(), $pubPermits->getSection(),
+                BitrixPermission::ELEMENT_ADD, false);
+
+        return $isAllow;
     }
 
 }

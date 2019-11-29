@@ -13,6 +13,7 @@ class BitrixScheme
     const APPROVED = 'approved';
     const IMAGES = 'images';
 
+
     /**
      * @return BitrixSection
      */

@@ -26,24 +26,25 @@ class Api
         $isValid = false;
         $isFound = false;
         switch ($call) {
-            case'new':
+            case Landmark::ADD_NEW:
                 $isFound = true;
                 $isValid = $this->parameters->has('x')
                     && $this->parameters->has('y')
                     && $this->parameters->has('type');
                 break;
-            case'store':
+            case Landmark::STORE:
                 $isFound = true;
                 $isValid = $this->parameters->has('x')
                     && $this->parameters->has('y')
                     && $this->parameters->has('number');
                 break;
-            case'publish':
+            case Landmark::PUBLISH:
                 $isFound = true;
                 $isValid = $this->parameters->has('number');
                 break;
-            case'flush':
-            case'reset':
+            case Landmark::FLUSH :
+            case Landmark::RECOMPILE:
+            case Landmark::RELEASE :
                 $isFound = true;
                 $isValid = true;
                 break;

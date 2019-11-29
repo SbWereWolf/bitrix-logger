@@ -15,14 +15,11 @@ use Exception;
 use LanguageSpecific\ArrayHandler;
 use Topliner\Bitrix\BitrixReference;
 use Topliner\Bitrix\BitrixSection;
+use Topliner\Bitrix\InfoBlock;
 use Topliner\Routines\Utility;
 
 class Construct
 {
-
-    const IBLOCK = 'iblock';
-    const SECTION_ID = 'SECTION_ID';
-    const VALUE = 'VALUE';
     /**
      * @var BitrixSection
      */
@@ -33,7 +30,7 @@ class Construct
     private $constructs = null;
 
 
-    public function __construct($permits = null, $constructions = null)
+    public function __construct($permits = null, $constructs = null)
     {
         $isPermit = $permits instanceof BitrixSection;
         if ($isPermit) {
@@ -42,9 +39,9 @@ class Construct
         if (!$isPermit) {
             $this->permits = BitrixScheme::getPermits();
         }
-        $isConstruction = $constructions instanceof BitrixSection;
+        $isConstruction = $constructs instanceof BitrixSection;
         if ($isConstruction) {
-            $this->constructs = $constructions;
+            $this->constructs = $constructs;
         }
         if (!$isConstruction) {
             $this->constructs = BitrixScheme::getConstructs();
@@ -56,9 +53,8 @@ class Construct
      */
     public function get()
     {
-        CModule::IncludeModule(self::IBLOCK);
 
-        $filter = [self::SECTION_ID => $this->constructs
+        $filter = [InfoBlock::SECTION_ID => $this->constructs
             ->getSection()];
         $values = [];
         CIBlockElement::GetPropertyValuesArray($values,
@@ -73,11 +69,13 @@ class Construct
             ->get();
         $ofLightenings = (new BitrixReference('Lightening'))
             ->get();
+
+        $valueIndex = InfoBlock::VALUE;
         foreach ($values as $key => $value) {
             $data = [];
             $source = new ArrayHandler($value);
             $data['title'] = $source
-                ->pull('title')->get(self::VALUE)->str();
+                ->pull('title')->get($valueIndex)->str();
 
             $properties = static::getConstruction($source, $constructions);
 
@@ -86,47 +84,47 @@ class Construct
                 $data['name'] = $properties['name'];
             }
             $data['location'] = $source
-                ->pull('location')->get(self::VALUE)->str();
+                ->pull('location')->get($valueIndex)->str();
             $data['remark'] = $source
-                ->pull('remark')->get(self::VALUE)->str();
+                ->pull('remark')->get($valueIndex)->str();
             $data['x'] = $source
-                ->pull('longitude')->get(self::VALUE)->double();
+                ->pull('longitude')->get($valueIndex)->double();
             $data['y'] = $source
-                ->pull('latitude')->get(self::VALUE)->double();
+                ->pull('latitude')->get($valueIndex)->double();
             $data['construct_area'] = $source
-                ->pull('construct_area')->get(self::VALUE)->str();
+                ->pull('construct_area')->get($valueIndex)->str();
             $data['number_of_sides'] = $source
-                ->pull('number_of_sides')->get(self::VALUE)->str();
+                ->pull('number_of_sides')->get($valueIndex)->str();
 
             $surface = $source
-                ->pull('field_type')->get(self::VALUE)->str();
+                ->pull('field_type')->get($valueIndex)->str();
             $data['field_type'] =
                 self::getTitleFor($surface, $ofSurfaces);
 
             $data['construct_height'] = $source
-                ->pull('construct_height')->get(self::VALUE)
+                ->pull('construct_height')->get($valueIndex)
                 ->str();
             $data['construct_width'] = $source
-                ->pull('construct_width')->get(self::VALUE)->str();
+                ->pull('construct_width')->get($valueIndex)->str();
             $data['fields_number'] = $source
-                ->pull('fields_number')->get(self::VALUE)->str();
+                ->pull('fields_number')->get($valueIndex)->str();
             $data['fields_area'] = $source
-                ->pull('fields_area')->get(self::VALUE)->str();
+                ->pull('fields_area')->get($valueIndex)->str();
             $images = $source
-                ->pull('images')->get(self::VALUE)->asIs();
+                ->pull('images')->get($valueIndex)->asIs();
             $data['images'] = [];
             foreach ($images as $image) {
                 $data['images'][] = CFile::GetPath($image);
             }
             $lightening = $source
-                ->pull('lightening')->get(self::VALUE)->str();
+                ->pull('lightening')->get($valueIndex)->str();
 
             $data['lightening'] =
                 self::getTitleFor($lightening, $ofLightenings);
 
 
             $permit = $source->pull('permit_of_ad')
-                ->get(self::VALUE)->int();
+                ->get($valueIndex)->int();
 
             $letSetup = false;
             $isExists = false;
@@ -145,7 +143,7 @@ class Construct
         }
 
         $permitFilter = array_keys($permits);
-        $filter = [self::SECTION_ID => $this->permits
+        $filter = [InfoBlock::SECTION_ID => $this->permits
             ->getSection(), 'ID' => $permitFilter];
         $values = [];
         CIBlockElement::GetPropertyValuesArray($values,
@@ -163,24 +161,24 @@ class Construct
             $source = new ArrayHandler($value);
 
             $data['number'] = $source
-                ->pull('number')->get(self::VALUE)->int();
+                ->pull('number')->get($valueIndex)->int();
             $data['contract'] = $source
-                ->pull('contract')->get(self::VALUE)->str();
+                ->pull('contract')->get($valueIndex)->str();
 
             $issuingAt = $source->pull('issuing_at')
-                ->get(self::VALUE)->str();
+                ->get($valueIndex)->str();
             $data['issuing_at'] = Utility::toUnixTime($issuingAt);
 
             $start = $source->pull('start')
-                ->get(self::VALUE)->str();
+                ->get($valueIndex)->str();
             $data['start'] = Utility::toUnixTime($start);
 
             $finish = $source->pull('finish')
-                ->get(self::VALUE)->str();
+                ->get($valueIndex)->str();
             $data['finish'] = Utility::toUnixTime($finish);
 
             $distributor = $source
-                ->pull('distributor')->get(self::VALUE)->str();
+                ->pull('distributor')->get($valueIndex)->str();
             $title = self::getTitleFor($distributor, $ofDistributors);
             $data['distributor'] = $title;
 
@@ -207,7 +205,7 @@ class Construct
                                            $constructions)
     {
         $construction = $source
-            ->pull('type')->get(self::VALUE)->str();
+            ->pull('type')->get(InfoBlock::VALUE)->str();
         $name = null;
         /* @var $constructions DataManager */
         if (!$constructions !== null) {
@@ -233,8 +231,8 @@ class Construct
     }
 
     /**
-     * @param ArrayHandler $source
      * @param string $type
+     * @param $constructions
      * @return string
      */
     public static function getConstructionWithType($type,

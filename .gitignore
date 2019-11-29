@@ -17,5 +17,4 @@
 web.config
 /scheme/js/published.json
 /scheme/js/points.json
-/scheme/js/published.js
-/scheme/js/points.js
+/scheme/test.php
