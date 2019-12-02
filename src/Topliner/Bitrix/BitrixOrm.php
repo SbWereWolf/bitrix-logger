@@ -9,7 +9,7 @@ use CIBlockResult;
 
 class BitrixOrm
 {
-    const MAX_UNSIGNED = 18446744073709551615;
+    const MAX_SIGNED = 9223372036854775807;
 
     /**
      * @param $response
@@ -59,12 +59,14 @@ class BitrixOrm
 
         $ids = [];
         if ($isReadSuccess) {
-            $response->NavStart(static::MAX_UNSIGNED);
+            $response->NavStart(static::MAX_SIGNED);
             $ids = $response->arResult;
-        }
-        if (!empty($ids)) {
             $ids = array_column($ids, 'ID');
+            $ids = array_map(function ($i) {
+                return (int)$i;
+            }, $ids);
         }
+
         return $ids;
     }
 }

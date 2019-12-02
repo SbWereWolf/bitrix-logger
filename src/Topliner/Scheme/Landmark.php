@@ -498,8 +498,8 @@ class Landmark
             $pubConstructs = BitrixScheme::getPublishedConstructs();
             $pubPermits = BitrixScheme::getPublishedPermits();
             $construct = new Construct($pubPermits, $pubConstructs);
-            $points = $construct->get();
-            $json = json_encode($points);
+            $published = $construct->get();
+            $json = json_encode($published);
             $file = fopen($this->getPathToPublished(), 'w');
             $isSuccess = $file !== false;
         }
