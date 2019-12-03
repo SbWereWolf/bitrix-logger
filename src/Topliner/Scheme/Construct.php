@@ -132,14 +132,19 @@ class Construct
                 $isExists = key_exists($permit, $permits);
                 $letSetup = true;
             }
+
+            $original = $source->pull('original')
+                ->get($valueIndex)->int();
+            $index = $original ?: $key;
+
             if ($isExists) {
-                $permits[$permit][] = $key;
+                $permits[$permit][] = $index;
             }
             if ($letSetup && !$isExists) {
-                $permits[$permit] = [$key];
+                $permits[$permit] = [$index];
             }
 
-            $result[(int)$key] = $data;
+            $result[$index] = $data;
         }
 
         $permitFilter = array_keys($permits);
