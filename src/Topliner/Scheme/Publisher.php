@@ -301,7 +301,8 @@ class Publisher
                 ' Success copying of permit';
             $output['withPermit'] = $publishedPermit;
         }
-        if ($gotPermit && !empty($publishedPermit)) {
+        if ($gotPermit && !empty($publishedPermit)
+            && !empty($properties)) {
             $properties['permit_of_ad'] = $publishedPermit;
         }
         if (!empty($properties)) {

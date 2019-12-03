@@ -10,10 +10,6 @@ require_once($_SERVER['DOCUMENT_ROOT']
 use LanguageSpecific\ArrayHandler;
 use Topliner\Scheme\Api;
 
-/* @var $APPLICATION CMain */
-global $APPLICATION;
-/* @var $DB CDatabase */
-global $DB;
 /* @var $USER CUser */
 global $USER;
 $cookies = new ArrayHandler($_COOKIE);
@@ -26,6 +22,7 @@ if ($isSuccess) {
     $data = $_POST['data'];
     $parameters = json_decode($data, true);
     $parameters['DOCUMENT_ROOT'] = $_SERVER['DOCUMENT_ROOT'];
+    set_time_limit(3600);
     $output = (new Api($parameters))->run();
 }
 $result = json_encode($output);
