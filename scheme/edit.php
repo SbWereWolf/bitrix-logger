@@ -283,12 +283,12 @@ $isAdmin = $USER->IsAdmin() ? 'block' : 'none';
                                 </div>
                                 <button id="accept" disabled
                                         class="btn btn-block btn-success rk-edit-control" style="display: none"
-                                        id="rk-save">
+                                        >
                                     Сохранить
                                 </button>
                                 <button id="decline" disabled
                                         class="btn btn-block btn-danger rk-edit-control" style="display: none"
-                                        id="rk-cancel">
+                                        >
                                     Отменить
                                 </button>
                                 <button id="publish" disabled
