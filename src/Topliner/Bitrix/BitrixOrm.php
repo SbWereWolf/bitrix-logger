@@ -53,20 +53,36 @@ class BitrixOrm
     public static function getIdOfAll(array $filter)
     {
         $select = ['ID',];
-        $response = CIBlockElement::GetList([], $filter,
-            false, false, $select);
+        $response = CIBlockElement::GetList([current($select) => 'ASC'],
+            $filter, false, false, $select);
         $isReadSuccess = static::isRequestSuccess($response);
 
-        $ids = [];
         if ($isReadSuccess) {
             $response->NavStart(static::MAX_SIGNED);
+        }
+        $ids = [];
+        if (is_array($response->arResult)) {
             $ids = $response->arResult;
-            $ids = array_column($ids, 'ID');
-            $ids = array_map(function ($i) {
-                return (int)$i;
-            }, $ids);
+            $ids = array_column($ids, current($select));
+            $ids = array_map('intval', $ids);
         }
 
         return $ids;
+    }
+
+    /**
+     * @param array $forDelete
+     * @return bool
+     */
+    public static function deleteAllOf(array $forDelete)
+    {
+        $isSuccess = true;
+        foreach ($forDelete as $id) {
+            $isSuccess = CIBlockElement::Delete($id);
+            if (!$isSuccess) {
+                break;
+            }
+        }
+        return $isSuccess;
     }
 }

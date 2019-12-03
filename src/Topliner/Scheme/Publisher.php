@@ -76,26 +76,29 @@ class Publisher
     {
         $output = ['success' => false];
 
-        $isSuccess = $this->deleteAllPublished();
+        $isSuccess = $this->DeleteNotValid();
         if (!$isSuccess) {
-            $output['message'] = 'Fail delete published';
+            $output['message'] =
+                'Fail remove deleted constructs and permits';
         }
-        if ($isSuccess) {
-            $constructs = ['IBLOCK_ID' => $this->constructs->getBlock(),
-                'SECTION_ID' => $this->constructs->getSection(),
-            ];
-            $ids = BitrixOrm::getIdOfAll($constructs);
 
-            foreach ($ids as $id) {
-                $output = $this->publishOne($id);
-                $isSuccess = $output['success'];
-                if (!$isSuccess) {
-                    break;
-                }
+        $unpublished = [];
+        if ($isSuccess) {
+            $unpublished = $this->searchUnpublished();
+        }
+
+        $isSuccess = true;
+        foreach ($unpublished as $id) {
+            $output = $this->publishOne($id);
+            $isSuccess = $output['success'];
+            if (!$isSuccess) {
+                break;
             }
         }
         if ($isSuccess) {
-            $output['message'] = 'Success publish all constructs';
+            $output['success'] = true;
+            $numbers = count($unpublished);
+            $output['message'] = "Success publish $numbers constructs";
         }
         if ($isSuccess && key_exists('withPermit', $output)) {
             unset($output['withPermit']);
@@ -105,33 +108,18 @@ class Publisher
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    private function deleteAllPublished()
+    public function searchUnpublished()
     {
-        $allIds = [];
-
-        $pubConstructs = ['IBLOCK_ID' =>
-            $this->pubConstructs->getBlock(),
-            'SECTION_ID' => $this->pubConstructs->getSection(),
+        $filter = ['IBLOCK_ID' => $this->constructs->getBlock(),
+            'SECTION_ID' => $this->constructs->getSection(),
+            '!PROPERTY_' . BitrixScheme::PUBLISH_STATUS
+            => BitrixScheme::APPROVED,
         ];
-        $ids = BitrixOrm::getIdOfAll($pubConstructs);
-        $allIds = array_merge($allIds, $ids);
+        $ids = BitrixOrm::getIdOfAll($filter);
 
-        $pubPermits = ['IBLOCK_ID' => $this->pubPermits->getBlock(),
-            'SECTION_ID' => $this->pubPermits->getSection(),
-        ];
-        $ids = BitrixOrm::getIdOfAll($pubPermits);
-        $allIds = array_merge($allIds, $ids);
-
-        $isSuccess = false;
-        foreach ($allIds as $id) {
-            $isSuccess = CIBlockElement::Delete($id);
-            if (!$isSuccess) {
-                break;
-            }
-        }
-        return $isSuccess;
+        return $ids;
     }
 
     /**
@@ -362,5 +350,41 @@ class Publisher
                 $properties, ['NewElement' => true]);
         }
         return $copy;
+    }
+
+    /**
+     * @return bool
+     */
+    private function DeleteNotValid()
+    {
+        $allFilters = [];
+
+        $allFilters[] = ['IBLOCK_ID' => $this->pubConstructs->getBlock(),
+            'SECTION_ID' => $this->pubConstructs->getSection(),
+            'PROPERTY_ORIGINAL' => false
+        ];
+        $allFilters[] = ['IBLOCK_ID' => $this->pubConstructs->getBlock(),
+            'SECTION_ID' => $this->pubConstructs->getSection(),
+            '!PROPERTY_' . BitrixScheme::PUBLISH_STATUS
+            => BitrixScheme::APPROVED,
+        ];
+        $allFilters[] = ['IBLOCK_ID' => $this->pubPermits->getBlock(),
+            'SECTION_ID' => $this->pubPermits->getSection(),
+            'PROPERTY_ORIGINAL' => false
+        ];
+        $allFilters[] = ['IBLOCK_ID' => $this->pubPermits->getBlock(),
+            'SECTION_ID' => $this->pubPermits->getSection(),
+            '!PROPERTY_' . BitrixScheme::PUBLISH_STATUS
+            => BitrixScheme::APPROVED,
+        ];
+
+        $allForDelete = [];
+        foreach ($allFilters as $filter) {
+            $forDelete = BitrixOrm::getIdOfAll($filter);
+            $allForDelete = array_merge($allForDelete, $forDelete);
+        }
+
+        $isSuccess = BitrixOrm::deleteAllOf($allForDelete);
+        return $isSuccess;
     }
 }
