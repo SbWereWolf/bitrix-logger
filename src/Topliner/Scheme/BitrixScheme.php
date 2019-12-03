@@ -13,7 +13,6 @@ class BitrixScheme
     const APPROVED = 'approved';
     const IMAGES = 'images';
 
-
     /**
      * @return BitrixSection
      */
@@ -51,6 +50,6 @@ class BitrixScheme
      */
     public static function getAudits()
     {
-        return new BitrixSection(9, 12, 'аудит');
+        return new BitrixSection(9, 12, 'Аудит');
     }
 }

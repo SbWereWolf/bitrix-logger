@@ -13,8 +13,10 @@ class PermitTab
     function OnInit($arArgs)
     {
         $permits = BitrixScheme::getPermits();
-        $letShow = (int)$arArgs['IBLOCK']['ID']
-            === $permits->getBlock();
+        $pubPermits = BitrixScheme::getPublishedPermits();
+        $blockId = (int)$arArgs['IBLOCK']['ID'];
+        $letShow = $blockId === $permits->getBlock()
+            || $blockId === $pubPermits->getBlock();
         $result = false;
         if ($letShow) {
             $result = [
