@@ -23,6 +23,11 @@ $isAdmin = $USER->IsAdmin() ? 'block' : 'none';
                     Администрации города Челябинска
                 </h1>
             </div>
+            <div class="header-text" style="position: absolute; right:30px; top:30px;">
+                <h1 style="padding-top: 3px; padding-left: 100px" class="ch">
+                    Черновик
+                </h1>
+            </div>
         </div>
     </div>
     <div class="container-fluid content">
@@ -67,9 +72,9 @@ $isAdmin = $USER->IsAdmin() ? 'block' : 'none';
                                         <label>Cектор:</label>
                                     </div>
                                     <div class="col-10 input-group mb-3">
-                                        <select class="custom-select" name="sector-0" id="sector-0">
-                                        </select>
                                         <select class="custom-select" name="sector-1" id="sector-1">
+                                        </select>
+                                        <select class="custom-select" name="sector-0" id="sector-0">
                                         </select>
                                         <input type="button" onclick="return false" id="goto-sector" value="Перейти"
                                                class="btn btn-warning"/>

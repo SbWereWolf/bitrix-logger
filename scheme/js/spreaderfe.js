@@ -56,7 +56,7 @@ const spreader = {
                     + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location + '</strong></div>'
                     + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name + '</strong></div></div></div>';
                 footer = ''
-                    + '<div class="row" style="margin-right:-15px; margin-left:0""><div class="col-6" style="padding-right:0;">'
+                    + '<div class="row balloon-footer" style="margin-right:-15px; margin-left:0"><div class="col-6" style="padding-right:0;">'
                     + '<a class="btn btn-outline-primary btn-block"'
                     + ' href="#" onclick="painter.setPanorama(' + index + '); return false;">'
                     + 'Панорама</a></div><div class="col-6" style="margin-left:0;">'

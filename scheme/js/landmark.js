@@ -69,6 +69,8 @@ const landmark = {
         $('.rk-edit-control').hide();
         $('#new-address-div').show();
         $('#accept').show();
+        //$('#release').show();
+        //$('#recompile').show();
         const decline = $('#decline');
         decline.show();
         decline[0].disabled = false;
@@ -83,6 +85,10 @@ const landmark = {
                 addNew.show();
                 addNew[0].disabled = false;
                 $('#publish').show();
+                $('#release').show();
+                $('#recompile').show();
+                $('#flush').show();
+
                 landmarkFilter.run();
             }
         });
@@ -152,6 +158,8 @@ const landmark = {
         $('#add-new').show();
         $('#publish').show();
         $('#flush').show();
+        $('#release').show();
+        $('#recompile').show();
         $(landmark.acceptId).prop("disabled", true);
         $(landmark.declineId).prop("disabled", true);
         $(landmark.addNewId).prop("disabled", false);
@@ -238,6 +246,7 @@ const landmark = {
         }, 'json');
     },
     release: function () {
+        landmark.block();
         let data = landmark.getCredentials();
         data.call = 'release';
 

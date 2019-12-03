@@ -64,6 +64,8 @@ const spreader = {
                 $('#rk-type').show();
                 $('#add-new').show();
                 $('#publish').show();
+                $('#release').show();
+                $('#recompile').show();
                 $('#flush').show();
                 $('#address').val("");
                 landmarkFilter.run();
@@ -121,7 +123,7 @@ const spreader = {
                     + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location+ '</strong></div>'
                     + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name+ '</strong></div></div></div>';
                     footer = ''
-                        + '<div class="row" style="margin-right:-15px; margin-left:0""><div class="col-3" style="padding-right:0;">'
+                        + '<div class="row balloon-footer" style="margin-right:-15px; margin-left:0"><div class="col-3" style="padding-right:0;">'
                     + '<a class="btn btn-outline-primary btn-sm btn-block"'
                     + ' href="#" onclick="painter.setPanorama(' + index+ '); return false;">'
                         + 'Панорама</a></div><div class="col-3" style="margin-left:0;padding-right:0;">'

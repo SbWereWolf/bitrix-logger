@@ -37,8 +37,8 @@ const painter = {
         info.place_images.forEach(function (val, index, arr) {
             image += "<div class=\"row\"><div class=\"col-12\"><img src=\"" + val + "\" class=\"img-thumbnail\" alt=\"photo\"/></div></div>";
         });
-        let address = info.place_remark
-            ? info.place_remark : info.place_location;
+        let address = info.place_location
+            ? info.place_location : info.place_remark;
         let content =
             "<h4>" + info.place_title + ","  + info.place_number + "</h4>"
             + image
