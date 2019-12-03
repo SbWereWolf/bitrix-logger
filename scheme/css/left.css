@@ -266,18 +266,28 @@ html, body {
     }
 }
 @media print {
-    /* здесь будут стили для печати */
     .lowvisiontriggerdiv { display: none;}
-    #leftTabs { display: none; }
-    .side-left { display: none; }
-    @page {
-        size: A4 landscape;
+    #leftTabs { display: none !important; }
+    .header h1.ch {
+        display: none;
     }
 
     #map {
         height: 100%;
     }
+    .rk-profile {
+        font-size: 16px;
+    }
+    .balloon-footer {
+        display: none !important;
+    }
+    .ballon-content .image {
+        display: none !important;
+    }
 
+}
+@page {
+    size: A4 landscape;
 }
 .tablebodytext {
     display: none;

@@ -26,6 +26,9 @@ const painter = {
             place_lightening: place.lightening,
             place_number: index,
         };
+        for(let val in info) {
+            if(typeof info[val] == 'undefined' ) info[val] = "";
+        }
         if (place.permit) {
             const issuing_at = spreader.getDateString(place.permit.issuing_at);
             const start = spreader.getDateString(place.permit.start);
@@ -41,8 +44,7 @@ const painter = {
         info.place_images.forEach(function (val, index, arr) {
             image += "<div class=\"row\"><div class=\"col-12\"><img src=\"" + val + "\" class=\"img-thumbnail\" alt=\"photo\"/></div></div>";
         });
-        let address = info.place_remark
-            ? info.place_remark : info.place_location;
+        let address = info.place_location ? info.place_location : info.place_remark;
         let content =
             "<h4>" + info.place_title + ","  + info.place_number + "</h4>"
             + image
@@ -134,8 +136,12 @@ const painter = {
                 iconImageOffset: [-0.5 * side, -1 * side],
                 hasBalloon: hasBalloon,
                 draggable: draggable,
+                hideIconOnBalloonOpen: false
             }
         );
+        point.options.set('balloonOffset', [0,-15]);
+        //console.log(point.balloon.getOptions());
+        //point.balloon.setOptions({panelMaxMapArea: 0});//.panelMaxMapArea = 0;
         if(draggable) {
             point.events.remove('balloonclose');
             return point;
