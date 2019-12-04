@@ -32,9 +32,16 @@ landmarkFilter = {
             }
             if(address.match(/^\d+$/)) {
                 if(Places[address]) {
+                    //console.log(Places[address]);
                     const p = points[address];
-                    myMap.setCenter([p.y,p.x], 17);
-                    Places[address].balloon.open();
+                    console.log([p.y,p.x]);
+                    try {
+                        myMap.setCenter([p.y,p.x], 17);
+                        //console.log(Places[address].balloon);
+                        Places[address].balloon.open();
+                    } catch (e) {
+                      console.log(e);
+                    }
                     landmark.unblock();
                     return;
                 }
