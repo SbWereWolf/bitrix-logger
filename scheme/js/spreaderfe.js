@@ -46,7 +46,7 @@ const spreader = {
                 image = "/scheme/assets/layout.png";
             }
             if (allow) {
-                header = '<div class="ballon-header">' + name + ', ' + index + '</div>';
+                header = '<div class="ballon-header">' + name + '</div>';
                 body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0">'
                     + '<div class="col-6 image" style="padding-right:0;">'
                     + '<img src="'
@@ -107,7 +107,6 @@ const spreader = {
                     placeInfo.place_permit_distributor = place.permit.distributor;
                     placeInfo.place_permit_contract = place.permit.contract;
                 }
-                //const details = Object.assign(placeInfo, permitInfo);
                 details = placeInfo;
                 const side = Number(spreader.side);
 
