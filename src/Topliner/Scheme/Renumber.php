@@ -8,11 +8,44 @@ use CDatabase;
 use CIBlockElement;
 use CModule;
 use mysqli;
+use mysqli_stmt;
 use Topliner\Bitrix\BitrixOrm;
 use Topliner\Bitrix\InfoBlock;
 
 class Renumber
 {
+    /**
+     * @param $id
+     * @param mysqli_stmt $query
+     * @param mysqli $dbConn
+     * @return bool
+     */
+    public static function storeNumber($id, mysqli_stmt $query,
+                                       mysqli $dbConn)
+    {
+        $isSuccess = $query->execute() !== false;
+        if ($isSuccess) {
+            $number = $dbConn->insert_id;
+
+            CIBlockElement::SetPropertyValuesEx(
+                $id, (BitrixScheme::getConstructs())->getBlock(),
+                ['number' => $number], ['NewElement' => true]);
+        }
+        return $isSuccess;
+    }
+
+    /**
+     * @param mysqli $dbConn
+     * @return false|mysqli_stmt
+     */
+    public static function prepare(mysqli $dbConn)
+    {
+        $query = $dbConn->prepare('
+insert into a_construct_number VALUE (DEFAULT)
+');
+        return $query;
+    }
+
     public function run()
     {
         CModule::IncludeModule(InfoBlock::MODULE);
@@ -36,28 +69,17 @@ class Renumber
         $query = null;
         $isSuccess = !empty($ids);
         if ($isSuccess) {
-            $query = $dbConn->prepare('
-insert into a_construct_number VALUE (DEFAULT)
-');
+            $query = static::prepare($dbConn);
             $isSuccess = $query !== false;
         }
         foreach ($ids as $key => $id) {
-
             if ($isSuccess) {
-                $isSuccess = $query->execute() !== false;
-            }
-            if ($isSuccess) {
-                $number = $dbConn->insert_id;
-
                 Logger::$operation = Logger::CHANGE;
-                CIBlockElement::SetPropertyValuesEx(
-                    $id, $constructs->getBlock(),
-                    ['number' => $number]);
             }
+            $isSuccess = static::storeNumber($id, $query, $dbConn);
             if (!$isSuccess) {
                 break;
             }
-
         }
 
         $dbConn->query('SET unique_checks=1');

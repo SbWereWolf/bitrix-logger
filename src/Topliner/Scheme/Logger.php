@@ -4,10 +4,12 @@
 namespace Topliner\Scheme;
 
 
+use CDatabase;
 use CIBlockElement;
 use CIBlockProperty;
 use CUser;
 use LanguageSpecific\ArrayHandler;
+use mysqli;
 use Topliner\Bitrix\BitrixOrm;
 use Topliner\Bitrix\BitrixSection;
 
@@ -55,8 +57,8 @@ class Logger
 
     public static function afterAdd(array &$arFields)
     {
-        $id = (int)$arFields['ID'];
-        $element = static::getBlockAndSection($id);
+        $elementId = (int)$arFields['ID'];
+        $element = static::getBlockAndSection($elementId);
         $sectionId = $element ? $element['IBLOCK_SECTION_ID'] : 0;
         if ($sectionId !== 0) {
             $arFields['IBLOCK_SECTION_ID'] = $sectionId;
@@ -90,8 +92,8 @@ class Logger
                 'PREVIEW_TEXT' => var_export($arFields, true),
             );
 
-            $element = new CIBlockElement();
-            $id = $element->Add($record);
+            $iElement = new CIBlockElement();
+            $id = $iElement->Add($record);
         }
         $isSuccess = !empty($id);
         if ($isSuccess) {
@@ -107,6 +109,28 @@ class Logger
             CIBlockElement::SetPropertyValuesEx($id,
                 $audit->getBlock(),
                 $payload);
+        }
+        $isSuccess = false;
+        if ($isOk) {
+            $blockId = (int)$element['IBLOCK_ID'];
+            $isSuccess = $blockId === (BitrixScheme::getConstructs())
+                    ->getBlock();
+        }
+        /** @var $dbConn mysqli */
+        $dbConn = null;
+        $query = false;
+        if ($isSuccess) {
+            /* @var $DB CDatabase */
+            global $DB;
+            $dbConn = $DB->db_Conn;
+
+            $query = Renumber::prepare($dbConn);
+            $isSuccess = $query !== false;
+        }
+        if ($isSuccess) {
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $isSuccess = Renumber::storeNumber($itemId,
+                $query, $dbConn);
         }
     }
 
