@@ -43,7 +43,7 @@ class Landmark
     public function process()
     {
         $output = ['success' => false, 'message' => 'Method not found'];
-        CModule::IncludeModule(InfoBlock::IBLOCK);
+        CModule::IncludeModule(InfoBlock::MODULE);
         CModule::IncludeModule('highloadblock');
 
         $call = $this->parameters->get('call')->str();

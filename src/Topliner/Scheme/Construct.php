@@ -133,7 +133,7 @@ class Construct
                 $letSetup = true;
             }
 
-            $original = $source->pull('original')
+            $original = $source->pull('number')
                 ->get($valueIndex)->int();
             $index = $original ?: $key;
 

@@ -2,19 +2,7 @@
 
 use Topliner\Scheme\Placement;
 
-const OBTAIN = 'obtain';
-$_SERVER["DOCUMENT_ROOT"] = realpath(__DIR__) . '/..';
-
-require_once($_SERVER["DOCUMENT_ROOT"] . '/vendor/autoload.php');
-require_once($_SERVER["DOCUMENT_ROOT"] . '/bitrix/header.php');
-
-/* @var $APPLICATION CMain */
-global $APPLICATION;
-/* @var $DB CDatabase */
-global $DB;
-
-$isExists = false;
-$isObtain = getenv(OBTAIN, true);
+$isObtain = require_once 'local.php';
 $isSuccess = false;
 $file = null;
 if ($isObtain) {
