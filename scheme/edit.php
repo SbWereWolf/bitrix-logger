@@ -1,4 +1,9 @@
 <?php
+/**
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
+
 define("NEED_AUTH", true);
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
 global $BITRIX_SM_UIDL, $BITRIX_SM_UIDH;

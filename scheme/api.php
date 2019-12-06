@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
 
 $_SERVER['DOCUMENT_ROOT'] = realpath(__DIR__) . '/..';
 
@@ -22,7 +25,7 @@ if ($isSuccess) {
     $data = $_POST['data'];
     $parameters = json_decode($data, true);
     $parameters['DOCUMENT_ROOT'] = $_SERVER['DOCUMENT_ROOT'];
-    set_time_limit(3600);
+    set_time_limit(600);
     $output = (new Api($parameters))->run();
 }
 $result = json_encode($output);

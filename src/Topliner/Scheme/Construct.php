@@ -1,4 +1,8 @@
 <?php
+/**
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
 
 namespace Topliner\Scheme;
 
@@ -134,19 +138,17 @@ class Construct
             }
 
             $data['id'] = $key;
-
-            $original = $source->pull('number')
+            $data['number'] = $source->pull('number')
                 ->get($valueIndex)->int();
-            $index = $original ?: $key;
 
             if ($isExists) {
-                $permits[$permit][] = $index;
+                $permits[$permit][] = $key;
             }
             if ($letSetup && !$isExists) {
-                $permits[$permit] = [$index];
+                $permits[$permit] = [$key];
             }
 
-            $result[$index] = $data;
+            $result[$key] = $data;
         }
 
         $permitFilter = array_keys($permits);

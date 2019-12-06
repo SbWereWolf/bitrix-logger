@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
 
 namespace Topliner\Scheme;
 
@@ -428,7 +431,10 @@ class Logger
     {
         $fields = new ArrayHandler($arParams);
         list($isAcceptable) = static::isAllow($fields);
+
+        $properties = [];
         $response = false;
+        $letChange = false;
         if ($isAcceptable) {
             $filter = ['CODE' => BitrixScheme::PUBLISH_STATUS];
             $response = CIBlockProperty::GetList([], $filter);
@@ -437,21 +443,50 @@ class Logger
         if (!empty($response)) {
             $fetched = $response->Fetch();
         }
-        $id = '';
+        $idOfProperty = '';
         if (!empty($fetched)) {
-            $id = $fetched['ID'];
+            $idOfProperty = $fetched['ID'];
         }
-        $letChange = false;
-        $target = '';
-        if (!empty($id)) {
-            $target = key($arParams['PROPERTY_VALUES'][$id]);
-            $letChange =
-                $arParams['PROPERTY_VALUES'][$id][$target]['VALUE']
-                !== BitrixScheme::APPROVED;
+        if (!empty($idOfProperty)) {
+            $properties = $arParams['PROPERTY_VALUES'];
+            $ids = array_keys($properties);
+            $filter = [];
+            foreach ($ids as $id) {
+                $filter[$id] = "PROPERTY_$id";
+            }
+
+            $response = CIBlockElement::GetList(
+                [], ['IBLOCK_ID' => $arParams['IBLOCK_ID'],
+                'ID' => $arParams['ID']], false, false,
+                $filter);
+            $response->NavStart(BitrixOrm::MAX_SIGNED);
+            $currents = (new ArrayHandler($response->arResult))->pull();
+            $response = null;
+
+            $keys = [];
+            foreach ($filter as $id => $propertyId) {
+                $keys[$id] = "{$propertyId}_VALUE";
+            }
+
+            unset($keys[$idOfProperty]);
+            foreach ($keys as $id => $key) {
+                $actual = $currents->get($key)->str();
+                $become = (string)(current($properties[$id])['VALUE']);
+                $letChange = $actual !== $become;
+                if ($letChange) {
+                    break;
+                }
+            }
+        }
+        if (!$letChange && !empty($idOfProperty)) {
+            $become = (string)
+            (current($properties[$idOfProperty])['VALUE']);
+            $letChange = $become !== BitrixScheme::APPROVED;
         }
         if ($letChange) {
-            $arParams['PROPERTY_VALUES'][$id][$target]['VALUE'] =
-                BitrixScheme::DRAFT;
+            $target = key($properties[$idOfProperty]);
+            $arParams['PROPERTY_VALUES'][$idOfProperty][$target]
+            ['VALUE'] = BitrixScheme::DRAFT;
         }
     }
 

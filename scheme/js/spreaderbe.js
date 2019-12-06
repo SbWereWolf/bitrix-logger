@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
+
 let Places = [];
 const spreader = {
     letClusterize: true,
@@ -11,9 +16,9 @@ const spreader = {
         return (new Date(unixTime * 1000))
             .toLocaleDateString("ru-RU");
     },
-    moveByIndex: function(index) {
+    moveByIndex: function (index) {
         myMap.geoObjects.removeAll();
-        const place  = points[index];
+        const place = points[index];
         const hasPermit = typeof place.permit !== typeof undefined;
         if (!hasPermit) {
             iconSet = iconSetup.available;
@@ -32,15 +37,15 @@ const spreader = {
         point.events.add('dragend', function () {
             landmark.action = landmark.move;
             const coord = point.geometry.getCoordinates();
-            var myGeocoder = ymaps.geocode(coord, {kind: 'house' });
-            myGeocoder.then (
-                function(res) {
+            var myGeocoder = ymaps.geocode(coord, {kind: 'house'});
+            myGeocoder.then(
+                function (res) {
                     var street = res.geoObjects.get(0);
                     var name = street.properties.get('name');
                     // Будет выведено «улица Большая Молчановка»,
                     // несмотря на то, что обратно геокодируются
                     // координаты дома 10 на ул. Новый Арбат.
-                    if(name) {
+                    if (name) {
                         $('#new-address').val(name);
                     }
                 }
@@ -56,7 +61,7 @@ const spreader = {
         decline[0].disabled = false;
         decline.off('click');
         decline.one('click', function () {
-            if(!this.disabled) {
+            if (!this.disabled) {
                 myMap.geoObjects.remove(point);
                 //point.geometry.setCoordinates([place.y, place.x]);
                 this.disabled = true;
@@ -74,17 +79,16 @@ const spreader = {
         })
 
 
-
     },
     place: function (conditions) {
         Places = [];
-        if(!conditions) conditions = conditions = {types: [], address: "" };
+        if (!conditions) conditions = conditions = {types: [], address: ""};
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {
             spreader.side = spreader.big;
-            cluster = new ymaps.Clusterer({maxZoom:17});
-            cluster.balloon.events.add('open', function(e) {
+            cluster = new ymaps.Clusterer({maxZoom: 17});
+            cluster.balloon.events.add('open', function (e) {
             })
         }
         if (!spreader.letClusterize) {
@@ -100,46 +104,46 @@ const spreader = {
             let body = "";
 
             let footer = "";
-            if(typeof place.name != "undefined") place.name += "";
+            if (typeof place.name != "undefined") place.name += "";
             else {
                 place.name = "";
             }
             let name = place.name.split('(')[0];
             name = name.charAt(0).toUpperCase() + name.slice(1);
             let image = "";
-            if(typeof place.images !== 'undefined' && place.images[0]) {
+            if (typeof place.images !== 'undefined' && place.images[0]) {
                 image = place.images[0];
             } else {
                 place.images = ["/scheme/assets/layout.png"];
                 image = "/scheme/assets/layout.png";
             }
             if (allow) {
-                header = '<div class="ballon-header">' + name+ ', ' + index+ '</div>';
+                header = '<div class="ballon-header">' + name + ', ' + place.number + '</div>';
                 body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0">'
                     + '<div class="col-6 image" style="padding-right:0;">'
                     + '<img src="' + image + '" alt="construct photo" ' +
                     'class="img-thumbnail rounded-0 "/>'
                     + '</div><div class="col-6">'
-                    + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location+ '</strong></div>'
-                    + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name+ '</strong></div></div></div>';
-                    footer = ''
-                        + '<div class="row balloon-footer" style="margin-right:-15px; margin-left:0"><div class="col-3" style="padding-right:0;">'
+                    + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location + '</strong></div>'
+                    + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name + '</strong></div></div></div>';
+                footer = ''
+                    + '<div class="row balloon-footer" style="margin-right:-15px; margin-left:0"><div class="col-3" style="padding-right:0;">'
                     + '<a class="btn btn-outline-primary btn-sm btn-block"'
-                    + ' href="#" onclick="painter.setPanorama(' + index+ '); return false;">'
-                        + 'Панорама</a></div><div class="col-3" style="margin-left:0;padding-right:0;">'
+                    + ' href="#" onclick="painter.setPanorama(' + index + '); return false;">'
+                    + 'Панорама</a></div><div class="col-3" style="margin-left:0;padding-right:0;">'
                     + '<a class="btn btn-primary btn-sm btn-block" '
                     + ' target="_blank"'
-                    + ' href="#" onclick="painter.setProfileByIndex(' + index+ ');return false">'
+                    + ' href="#" onclick="painter.setProfileByIndex(' + index + ');return false">'
                     + 'Подробно</a></div>' +
-                        '<div class="col-3" style="margin-left:0;padding-right:0;">' +
-                        '<a class="btn btn-primary btn-sm btn-block" ' +
-                        ' target="_blank" href="' + constructEdit + place.id + '">' +
-                        'Редактoр</a></div>' +
-                        '<div class="col-3" style="margin-left:0;">' +
-                        '<a class="btn btn-primary btn-sm btn-block" ' +
-                        ' target="_blank" href="#" onclick="spreader.moveByIndex(' + index+ ');return false">' +
-                        'Двигать</a></div>' +
-                        '</div>';
+                    '<div class="col-3" style="margin-left:0;padding-right:0;">' +
+                    '<a class="btn btn-primary btn-sm btn-block" ' +
+                    ' target="_blank" href="' + constructEdit + place.id + '">' +
+                    'Редактoр</a></div>' +
+                    '<div class="col-3" style="margin-left:0;">' +
+                    '<a class="btn btn-primary btn-sm btn-block" ' +
+                    ' target="_blank" href="#" onclick="spreader.moveByIndex(' + index + ');return false">' +
+                    'Двигать</a></div>' +
+                    '</div>';
 
             }
             let iconSet = [];
@@ -153,7 +157,7 @@ const spreader = {
             let placeInfo = {};
             if (allow) {
                 placeInfo = {
-                    place_images:place.images,
+                    place_images: place.images,
                     place_title: place.title ? place.title : name,
                     place_construct: place.name,
                     place_location: place.location,
@@ -168,7 +172,8 @@ const spreader = {
                     place_construct_width: place.construct_width,
                     place_fields_area: place.fields_area,
                     place_lightening: place.lightening,
-                    place_number: index,
+                    place_number: place.number,
+                    id: place.id,
                 };
                 if (allow && typeof place.permit !== typeof undefined) {
 
@@ -176,7 +181,7 @@ const spreader = {
                     const start = spreader.getDateString(place.permit.start);
                     const finish = spreader.getDateString(place.permit.finish);
 
-                    placeInfo.place_permit_number =  place.permit.number;
+                    placeInfo.place_permit_number = place.permit.number;
                     placeInfo.place_permit_issuing_at = issuing_at;
                     placeInfo.place_permit_start = start;
                     placeInfo.place_permit_finish = finish;

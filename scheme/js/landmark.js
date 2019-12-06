@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
+
 const landmark = {
     zoom: 17,
     changeCurrent: function (e) {
@@ -238,7 +243,7 @@ const landmark = {
     publish: function () {
         let data = landmark.getCredentials();
         data.call = 'publish';
-        data.number = placement.current.properties.get("info").place_number;
+        data.number = placement.current.properties.get("info").id;
 
         $.post('/scheme/api.php', {data: JSON.stringify(data)}, function (result) {
             if (result.success) alert('Опулибковано');

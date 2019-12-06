@@ -1,4 +1,8 @@
 <?php
+/**
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 6.12.2019 22:51 Volkhin Nikolay
+ */
 
 namespace Topliner\Scheme;
 
@@ -8,6 +12,7 @@ use CModule;
 use Exception;
 use mysqli;
 use PDO;
+use Topliner\Bitrix\BitrixSection;
 
 class ImportPermits
 {
