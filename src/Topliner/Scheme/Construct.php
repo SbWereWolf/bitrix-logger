@@ -133,6 +133,8 @@ class Construct
                 $letSetup = true;
             }
 
+            $data['id'] = $key;
+
             $original = $source->pull('number')
                 ->get($valueIndex)->int();
             $index = $original ?: $key;
@@ -241,7 +243,7 @@ class Construct
      * @return string
      */
     public static function getConstructionWithType($type,
-                                           $constructions)
+                                                   $constructions)
     {
         $name = null;
         /* @var $constructions DataManager */

@@ -92,7 +92,7 @@ const spreader = {
         }
         $.each(points, function (index, place) {
             const allow = !doSelecting
-                || (conditions.types.indexOf(place.construct) != -1);
+                || (conditions.types.indexOf(place.construct) !== -1);
 
             const hasPermit = typeof place.permit !== typeof undefined;
 
@@ -133,7 +133,7 @@ const spreader = {
                     + 'Подробно</a></div>' +
                         '<div class="col-3" style="margin-left:0;padding-right:0;">' +
                         '<a class="btn btn-primary btn-sm btn-block" ' +
-                        ' target="_blank" href="' + constructEdit + index + '">' +
+                        ' target="_blank" href="' + constructEdit + place.id + '">' +
                         'Редактoр</a></div>' +
                         '<div class="col-3" style="margin-left:0;">' +
                         '<a class="btn btn-primary btn-sm btn-block" ' +
