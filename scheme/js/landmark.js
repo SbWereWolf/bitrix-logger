@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 9.12.2019 15:14 Volkhin Nikolay
  */
 
 const landmark = {
@@ -74,8 +74,6 @@ const landmark = {
         $('.rk-edit-control').hide();
         $('#new-address-div').show();
         $('#accept').show();
-        //$('#release').show();
-        //$('#recompile').show();
         const decline = $('#decline');
         decline.show();
         decline[0].disabled = false;
@@ -183,9 +181,9 @@ const landmark = {
         data.x = coords[1];
         data.y = coords[0];
         data.number = Number(placement.current.properties
-            .get("info").number);
+            .get("info").id);
         data.call = 'store';
-        let place = points[data.number];
+        let place = points[data.id];
         if (place) {
             place.x = data.x;
             place.y = data.y;

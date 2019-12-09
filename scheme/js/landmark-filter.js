@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 TopLiner, Scheme of constructs
+ * 9.12.2019 15:14 Volkhin Nikolay
+ */
+
 let lastsearched;
 landmarkFilter = {
     searchId: "#show",
@@ -10,7 +15,8 @@ landmarkFilter = {
             if (isAddress) {
                 filter.address = subject.value;
             }
-            if (!isAddress && subject.name != 'sector-0' && subject.name != 'sector-1') {
+            if (!isAddress && subject.name != 'sector-0'
+                && subject.name != 'sector-1') {
                 filter.types.push(types[subject.name]);
             }
         });
@@ -20,31 +26,34 @@ landmarkFilter = {
     run: function () {
         landmark.block();
         const conditions = landmarkFilter.define();
-        //console.log(conditions);
-        //spreader.place(conditions);
         const address = conditions.address;
         if (address !== "") {
-            if(lastsearched && lastsearched.address == address) {
+            if (lastsearched && lastsearched.address === address) {
                 myMap.geoObjects.removeAll();
                 spreader.place(conditions);
                 landmark.unblock();
                 return;
             }
-            if(address.match(/^\d+$/)) {
-                if(Places[address]) {
-                    //console.log(Places[address]);
-                    const p = points[address];
-                    console.log([p.y,p.x]);
-                    try {
-                        myMap.setCenter([p.y,p.x], 17);
-                        //console.log(Places[address].balloon);
-                        Places[address].balloon.open();
-                    } catch (e) {
-                      console.log(e);
+            const isNumber = address.match(/^\d+$/);
+            if (isNumber) {
+                const digits = Number(address);
+                let skip = false;
+                $.each(points, function (index, point) {
+                    let letFocus = false;
+                    if (!skip) {
+                        letFocus = point.number === digits;
                     }
-                    landmark.unblock();
-                    return;
-                }
+                    if (letFocus) {
+                        try {
+                            myMap.setCenter([point.y, point.x], 18);
+                            Places[point.id].balloon.open();
+                        } catch (e) {
+                            console.log(e);
+                        }
+                        landmark.unblock();
+                        skip = true;
+                    }
+                });
             }
             ymaps.geocode(address, {
                 boundedBy: [[y, x], [yy, xx]],
@@ -60,8 +69,6 @@ landmarkFilter = {
                     checkZoomRange: true
                 });
                 lastsearched = {address:conditions.address, coords:coords, bounds:bounds };
-                //spreader.place(conditions);
-                //landmark.unblock();
             });
         } else {
             myMap.geoObjects.removeAll();
