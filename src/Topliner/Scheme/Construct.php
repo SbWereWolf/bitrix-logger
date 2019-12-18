@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 namespace Topliner\Scheme;
@@ -137,6 +137,10 @@ class Construct
                 $letSetup = true;
             }
 
+            $original = $source->pull('original')
+                ->get($valueIndex)->int();
+            $key = $original > 0 ? $original : $key;
+
             $data['id'] = $key;
             $data['number'] = $source->pull('number')
                 ->get($valueIndex)->int();
@@ -218,7 +222,6 @@ class Construct
         $name = null;
         /* @var $constructions DataManager */
         if (!$constructions !== null) {
-            /** @noinspection PhpUndefinedMethodInspection */
             try {
                 $name = $constructions::getList(array(
                     'select' => array('UF_NAME', 'UF_TYPE_ID'),
@@ -250,7 +253,6 @@ class Construct
         $name = null;
         /* @var $constructions DataManager */
         if (!$constructions !== null) {
-            /** @noinspection PhpUndefinedMethodInspection */
             try {
                 $name = $constructions::getList(array(
                     'select' => array('UF_NAME'),
@@ -280,7 +282,6 @@ class Construct
         /* @var $name Result */
         $name = null;
         if (!$reference !== null && !empty($code)) {
-            /** @noinspection PhpUndefinedMethodInspection */
             try {
                 $name = $reference::getList(array(
                     'select' => array('UF_NAME'),

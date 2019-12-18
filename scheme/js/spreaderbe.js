@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 let Places = [];
@@ -28,8 +28,8 @@ const spreader = {
         }
         let point = painter.mark(place, index, "", "",
             "", false, iconSet, this.side);
+        point.properties.set('info', place);
         placement.current = point;
-        point.properties.set('info', {number: index});
         myMap.geoObjects.add(point);
         const newAddress = $('#new-address');
         newAddress.val("");
@@ -110,12 +110,14 @@ const spreader = {
             }
             let name = place.name.split('(')[0];
             name = name.charAt(0).toUpperCase() + name.slice(1);
-            let image = "";
-            if (typeof place.images !== 'undefined' && place.images[0]) {
+            let image = "/scheme/assets/layout.png";
+            const hasImage = typeof place.images !== typeof undefined
+                && place.images[0];
+            if (hasImage) {
                 image = place.images[0];
-            } else {
-                place.images = ["/scheme/assets/layout.png"];
-                image = "/scheme/assets/layout.png";
+            }
+            if (!hasImage) {
+                place.images = [image];
             }
             if (allow) {
                 header = '<div class="ballon-header">' + name + ', ' + place.number + '</div>';

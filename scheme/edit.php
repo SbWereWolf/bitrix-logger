@@ -1,14 +1,18 @@
 <?php
 /**
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 define("NEED_AUTH", true);
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
 global $BITRIX_SM_UIDL, $BITRIX_SM_UIDH;
-setcookie("api-login", $BITRIX_SM_UIDL, time() + 3600 * 9);
-setcookie("api-hash", $BITRIX_SM_UIDH, time() + 3600 * 9);
+setcookie("api-login", $BITRIX_SM_UIDL, [
+    'expires' => time() + 3600 * 9,
+    'samesite' => 'Strict']);
+setcookie("api-hash", $BITRIX_SM_UIDH, [
+    'expires' => time() + 3600 * 9,
+    'samesite' => 'Strict']);
 
 /* @var $USER CUser */
 global $USER;

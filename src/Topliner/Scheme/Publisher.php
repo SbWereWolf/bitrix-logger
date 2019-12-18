@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 namespace Topliner\Scheme;
@@ -194,14 +194,14 @@ class Publisher
         }
         if ($gotChild && !$isSuccessDelete) {
             $output['message'] = !$letAppend
-                ? 'Fail delete published permit;'
+                ? 'Fail delete published construction;'
                 : $output['message']
                 . ' Fail delete published construction;';
             $letAppend = true;
         }
         if ($gotChild && $isSuccessDelete) {
             $output['message'] = !$letAppend
-                ? 'Success delete published permit;'
+                ? 'Success delete published construction;'
                 : $output['message']
                 . ' Success delete published construction;';
             $letAppend = true;
@@ -218,6 +218,11 @@ class Publisher
 
             $date = ConvertTimeStamp(time(), 'FULL');
             $construct['ACTIVE_FROM'] = $date;
+            unset($construct['ID']);
+            unset($construct['TIMESTAMP_X']);
+            unset($construct['MODIFIED_BY']);
+            unset($construct['DATE_CREATE']);
+            unset($construct['CREATED_BY']);
             $published = (new CIBlockElement())->Add($construct);
         }
         $hasCopy = !empty($published);
@@ -318,6 +323,11 @@ class Publisher
         $element['IBLOCK_ID'] = $section->getBlock();
         $element['IBLOCK_SECTION_ID'] = $section->getSection();
         $element['ACTIVE_FROM'] = $date;
+        unset($element['ID']);
+        unset($element['TIMESTAMP_X']);
+        unset($element['MODIFIED_BY']);
+        unset($element['DATE_CREATE']);
+        unset($element['CREATED_BY']);
         $copy = (int)((new CIBlockElement())->Add($element));
         $values = [];
         if (!empty($copy)) {

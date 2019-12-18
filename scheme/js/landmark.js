@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 9.12.2019 15:14 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 const landmark = {
@@ -183,13 +183,14 @@ const landmark = {
         data.number = Number(placement.current.properties
             .get("info").id);
         data.call = 'store';
-        let place = points[data.id];
+        let place = points[data.number];
         if (place) {
             place.x = data.x;
             place.y = data.y;
         }
         const newAddress = $('#new-address');
-        if ($('#new-address-change')[0].checked && newAddress.val()) {
+        if (place &&
+            $('#new-address-change')[0].checked && newAddress.val()) {
             data.address = newAddress.val();
             place.location = data.address;
             newAddress.val('');

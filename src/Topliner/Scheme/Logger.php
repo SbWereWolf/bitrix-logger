@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 6.12.2019 22:51 Volkhin Nikolay
+ * 18.12.2019 20:17 Volkhin Nikolay
  */
 
 namespace Topliner\Scheme;
@@ -42,6 +42,10 @@ class Logger
      */
     public static $operation = self::UNDEFINED;
 
+    /**
+     * @param array $arFields
+     * @noinspection PhpUnused
+     */
     public function OnAdd(array &$arFields)
     {
         $id = (int)$arFields['ID'];
@@ -58,6 +62,10 @@ class Logger
         }
     }
 
+    /**
+     * @param array $arFields
+     * @noinspection PhpUnused
+     */
     public static function afterAdd(array &$arFields)
     {
         $elementId = (int)$arFields['ID'];
@@ -144,6 +152,8 @@ class Logger
      * @param string $PROPERTY_CODE
      * @param array $ar_prop
      * @param array $arDBProps
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public static function OnSetPropertyValues(
         $ELEMENT_ID,
@@ -177,6 +187,8 @@ class Logger
      * @param int $IBLOCK_ID
      * @param array $PROPERTY_VALUES
      * @param string $PROPERTY_CODE
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public static function afterSetPropertyValues(
         $ELEMENT_ID,
@@ -227,7 +239,7 @@ class Logger
                         ->get('VALUE')->str();
                     $asIs = $was->pull($key)->pull()
                         ->get('VALUE')->str();
-                    $isDiffer = ($toBe != $asIs)
+                    $isDiffer = ($toBe !== $asIs)
                         && !(empty($toBe) && empty($asIs));
                 }
                 if ($isDiffer) {
@@ -303,6 +315,8 @@ class Logger
      * @param array $PROPERTY_VALUES
      * @param array $propertyList
      * @param array $arDBProps
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public static function OnSetPropertyValuesEx(
         $ELEMENT_ID,
@@ -328,6 +342,8 @@ class Logger
      * @param int $IBLOCK_ID
      * @param array $PROPERTY_VALUES
      * @param array $FLAGS
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public static function afterSetPropertyValuesEx(
         $ELEMENT_ID,
@@ -349,21 +365,36 @@ class Logger
             foreach (static::$names as $key => $value) {
 
                 $code = $value['CODE'];
+                $isImages = $code
+                    === BitrixScheme::IMAGES;
                 $isDiffer = false;
-                if ($was->has($key) || $after->has($code)) {
-                    $isDiffer = ($after->get($code)->str()
-                            != $was->pull($key)->pull()->get('VALUE')->str())
-                        && !(empty($after->get($code)->str())
-                            && empty($was->pull($key)->pull()->get('VALUE')->str()));
+                $toBe = '';
+                $asIs = '';
+                if ($isImages) {
+                    $imagesToBe = $after->get($code)->asIs();
+                    $imagesAsIs = $was->get($key)->asIs();
+                    foreach ($imagesToBe as $fileId => $image) {
+                        $export = var_export($image, true);
+                        $toBe = "$toBe КАРТИНКА $export; ";
+                        if (key_exists($fileId, $imagesAsIs)) {
+                            $export = var_export($imagesAsIs[$fileId],
+                                true);
+                            $asIs = "$asIs КАРТИНКА $export; ";
+                        }
+                    }
+                    $isDiffer = $toBe !== $asIs;
+                }
+                if (!$isImages && $after->has($code)) {
+                    $toBe = $after->get($code)->asIs();
+                    $asIs = $was->pull($key)->pull()
+                        ->get('VALUE')->str();
+                    $isDiffer = ($toBe !== $asIs)
+                        && !(empty($toBe) && empty($asIs));
                 }
                 if ($isDiffer) {
                     $name = static::$names[$key]['NAME'];
-                    $remark = $remark
-                        . "`$name` было "
-                        . "`{$was->pull($key)->pull()->get('VALUE')->asIs()}`"
-                        . " стало "
-                        . "`{$after->get($code)->asIs()}`"
-                        . '; ';
+                    $remark = "$remark `$name` было `$asIs`"
+                        . " стало `$toBe`; ";
                 }
 
             }
@@ -427,6 +458,10 @@ class Logger
         }
     }
 
+    /**
+     * @param array $arParams
+     * @noinspection PhpUnused
+     */
     public function beforeUpdate(array &$arParams)
     {
         $fields = new ArrayHandler($arParams);
@@ -496,7 +531,11 @@ class Logger
                 echo '5';
             }
     */
-
+    /**
+     * @param array $newFields
+     * @param array $ar_wf_element
+     * @noinspection PhpUnused
+     */
     public static function OnUpdate(array &$newFields, array &$ar_wf_element)
     {
         $id = (int)$newFields['ID'];
@@ -514,6 +553,10 @@ class Logger
         }
     }
 
+    /**
+     * @param array $arFields
+     * @noinspection PhpUnused
+     */
     public static function afterUpdate(array &$arFields)
     {
         $was = new ArrayHandler(static::$fields);
@@ -586,6 +629,7 @@ class Logger
     */
     /**
      * @param int $id
+     * @noinspection PhpUnused
      */
     public static function beforeDelete($id)
     {
@@ -600,12 +644,16 @@ class Logger
         }
     }
 
+    /**
+     * @param array $arFields
+     * @noinspection PhpUnused
+     */
     public static function afterDelete(array &$arFields)
     {
         if (!empty(static::$fields)) {
             $arFields['IBLOCK_SECTION_ID']
                 = static::$fields['IBLOCK_SECTION_ID'];
-        };
+        }
         $fields = new ArrayHandler($arFields);
         list($isAcceptable, $title) = static::isAllow($fields);
 
@@ -668,7 +716,7 @@ class Logger
             array(), array('ID' => $id), false, false,
             array('IBLOCK_ID', 'IBLOCK_SECTION_ID'));
         $element = ['IBLOCK_ID' => 0, 'IBLOCK_SECTION_ID' => 0];
-        $isExists = BitrixOrm::isRequestSuccess($response);;
+        $isExists = BitrixOrm::isRequestSuccess($response);
         if ($isExists) {
             $element = $response->Fetch();
         }
