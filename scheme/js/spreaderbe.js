@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2019 TopLiner, Scheme of constructs
- * 18.12.2019 20:17 Volkhin Nikolay
+ * Copyright (c) 2020 TopLiner, Scheme of constructs
+ * 16.1.2020 14:31 Volkhin Nikolay
  */
 
 let Places = [];
@@ -11,7 +11,8 @@ const spreader = {
     side: 20,
     compose: function (x, y) {
         return 'http://yandex.ru/maps/?from=api-maps'
-            + '&ll=' + x + '%2C' + y + '&panorama%5Bpoint%5D=' + x + '%2C' + y;
+            + '&ll=' + x + '%2C' + y + '&panorama%5Bpoint%5D=' + x
+            + '%2C' + y;
     }, getDateString: function (unixTime) {
         return (new Date(unixTime * 1000))
             .toLocaleDateString("ru-RU");
@@ -63,7 +64,6 @@ const spreader = {
         decline.one('click', function () {
             if (!this.disabled) {
                 myMap.geoObjects.remove(point);
-                //point.geometry.setCoordinates([place.y, place.x]);
                 this.disabled = true;
                 $('.rk-edit-control').hide();
                 $('#rk-type').show();
@@ -82,7 +82,10 @@ const spreader = {
     },
     place: function (conditions) {
         Places = [];
-        if (!conditions) conditions = conditions = {types: [], address: ""};
+        if (!conditions) conditions = conditions = {
+            types: [],
+            address: ""
+        };
         const doSelecting = conditions.types.length !== 0;
         let cluster;
         if (spreader.letClusterize) {
@@ -120,30 +123,35 @@ const spreader = {
                 place.images = [image];
             }
             if (allow) {
-                header = '<div class="ballon-header">' + name + ', ' + place.number + '</div>';
+                header = '<div class="ballon-header">' + name + ', '
+                    + place.number + '</div>';
                 body = '<div class="ballon-content row" style="margin-right:-30px; margin-left:0">'
                     + '<div class="col-6 image" style="padding-right:0;">'
-                    + '<img src="' + image + '" alt="construct photo" ' +
-                    'class="img-thumbnail rounded-0 "/>'
+                    + '<img src="' + image + '" alt="construct photo" '
+                    + 'class="img-thumbnail rounded-0 "/>'
                     + '</div><div class="col-6">'
                     + '<div class="rowdiv"><span class="address-label">Адрес:</span><br /> <strong>' + place.location + '</strong></div>'
                     + '<div class="rowdiv"><span class="address-label">Категория:</span><br /> <strong>' + place.name + '</strong></div></div></div>';
                 footer = ''
                     + '<div class="row balloon-footer" style="margin-right:-15px; margin-left:0"><div class="col-3" style="padding-right:0;">'
                     + '<a class="btn btn-outline-primary btn-sm btn-block"'
-                    + ' href="#" onclick="painter.setPanorama(' + index + '); return false;">'
+                    + ' href="#" onclick="painter.setPanorama(' +
+                    index + '); return false;">'
                     + 'Панорама</a></div><div class="col-3" style="margin-left:0;padding-right:0;">'
                     + '<a class="btn btn-primary btn-sm btn-block" '
                     + ' target="_blank"'
-                    + ' href="#" onclick="painter.setProfileByIndex(' + index + ');return false">'
+                    + ' href="#" onclick="painter.setProfileByIndex('
+                    + index + ');return false">'
                     + 'Подробно</a></div>' +
                     '<div class="col-3" style="margin-left:0;padding-right:0;">' +
                     '<a class="btn btn-primary btn-sm btn-block" ' +
-                    ' target="_blank" href="' + constructEdit + place.id + '">' +
+                    ' target="_blank" href="' + constructEdit
+                    + place.id + '">' +
                     'Редактoр</a></div>' +
                     '<div class="col-3" style="margin-left:0;">' +
                     '<a class="btn btn-primary btn-sm btn-block" ' +
-                    ' target="_blank" href="#" onclick="spreader.moveByIndex(' + index + ');return false">' +
+                    ' target="_blank" href="#" onclick="spreader.moveByIndex('
+                    + index + ');return false">' +
                     'Двигать</a></div>' +
                     '</div>';
 
@@ -177,18 +185,26 @@ const spreader = {
                     place_number: place.number,
                     id: place.id,
                 };
-                if (allow && typeof place.permit !== typeof undefined) {
+                if (allow
+                    && typeof place.permit !== typeof undefined
+                    && place.permit !== null) {
 
-                    const issuing_at = spreader.getDateString(place.permit.issuing_at);
-                    const start = spreader.getDateString(place.permit.start);
-                    const finish = spreader.getDateString(place.permit.finish);
+                    const issuing_at = spreader
+                        .getDateString(place.permit.issuing_at);
+                    const start = spreader
+                        .getDateString(place.permit.start);
+                    const finish = spreader
+                        .getDateString(place.permit.finish);
 
-                    placeInfo.place_permit_number = place.permit.number;
+                    placeInfo.place_permit_number = place.permit
+                        .number;
                     placeInfo.place_permit_issuing_at = issuing_at;
                     placeInfo.place_permit_start = start;
                     placeInfo.place_permit_finish = finish;
-                    placeInfo.place_permit_distributor = place.permit.distributor;
-                    placeInfo.place_permit_contract = place.permit.contract;
+                    placeInfo.place_permit_distributor = place.permit
+                        .distributor;
+                    placeInfo.place_permit_contract = place.permit
+                        .contract;
                 }
                 details = placeInfo;
                 const side = Number(spreader.side);
